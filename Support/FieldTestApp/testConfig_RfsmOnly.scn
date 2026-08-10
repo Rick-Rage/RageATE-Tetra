@@ -1,0 +1,451 @@
+[home]
+homeDirectory = ".\\"
+mtxCommand = "mtx2asci.exe"
+ImageMagickFolder = "\ImageMagick-6.7.7-Q8-static"
+
+# 
+# Revision control definition
+# A.B.C
+# A - Revised when code changes are made which are not backwards compatible with previous *.scn, *.ftd or *.isu files.
+#     Also revised when changes are made in signal level calculations such that the results can not be compared to previous revs.
+# B - Revised for any code change other than those defined for rev A.
+# C - Revised with any change in testConfig.scn outside of the limits which have their own revision string.
+# fieldTestRev = A.B   testConfigRev = C
+# fieldTest 1.1 revision added maxTopAntDelta specification.
+fieldTestRev = "2.1"
+# testConfigRev = 1 - addition of limits for new cal target.
+# testConfigRev = 2 - addition of tighter Final Test limits prior to FAT
+testConfigRev = 2
+
+[system]
+#  Set V2_Antenna = 0 for Version 1 switch systems.
+#                 = 1 for V2 switch systems.
+V2_Antenna = 1
+
+# COM_Port is used for the Linux console and the Parker GV6 motor controller
+COM_Port = 11
+
+# U_X3 is an ac power relay controlled by a 300 BAUD serial port.
+U_X3_Port = 1
+
+# MPSSE_Device is used with the cAds1118 class which controls a thermocouple.
+# Note that we use the "Direct Mode" D2xx driver rather than "Virtual COM Port" driver
+# for this device and hence it doesn't matter what COM port number Windows assigns.
+MPSSE_Device = 0
+
+# bHaveThermocouple indicates whether an ADS1118 thermocouple is attached
+# (and hence should be continually monitored).
+bHaveThermocouple = 0
+
+# The bBeVerbose boolean will cause extra printf() output to be dumped
+# to both the black console ("DOS Box") window and the EDIT control pane:
+bBeVerbose = 1
+
+# The bTrySlaveFirst determines whether FieldTest, upon initiation,
+# first tries to contact a Slave ISU or a Master ISU:
+bTrySlaveFirst = 1
+
+
+[WalkVCO]
+
+numSteps = 40
+
+
+[fcc]
+low = 24.5
+med = 27.0
+high = 29.78
+freqTolerance = 0.010
+antenna = 190
+
+[testMenuSetup]
+VCO = 1
+ANT_LOOP = 0
+MAST = 1
+SINGLE_ANT = 1
+XCVR = 1
+ENCODER = 0
+VCO_CAL = 0
+ENGR_TEST = 1
+SET_FREQ = 1
+TX_LOOP = 1
+
+[fieldVco]
+vcoDac1 = 10
+vcoMin1 = 21.5
+vcoMax1 = 24.0
+vcoDac2 = 200
+vcoMin2 = 24.0
+vcoMax2 = 27.0
+vcoDac3 = 400
+vcoMin3 = 26.0
+vcoMax3 = 29.0
+vcoDac4 = 600
+vcoMin4 = 28.0
+vcoMax4 = 30.5
+
+#[fieldRadar]
+#elements = 383
+#amplMin = 3.0
+#amplMax = 14.0
+
+[staticPosition]
+defaultAnt = 192
+defaultVco = 350
+
+[cwSweep]
+startDac = 110
+stopDac = 700
+stepDac = 5
+stepDelay = 0.5
+
+[antennaLoop]
+startAddr = 1
+stopAddr = 383
+step = 32
+
+[scanMonitor]
+maxPeak = 6.0
+maxAverage = 3.0
+
+[test]
+scanner = 1
+vcoFile = "VcoRampTableAfterIsuUpgrade.txt"
+# The executable automatically appends either "Master" or "Slave" to the vcoFile filename.
+# The VcoRampTableAfterIsuUpgradeMaster.txt file holds the same contents (formatted
+# differently and missing the first line which involved the VCO_INACTIVE register)
+# as the Master_VCO.txt file found on the Master ISU in the /home/primary/vco folder.
+# The VcoRampTableAfterIsuUpgradeSlave.txt file holds the same contents (formatted
+# differently and missing the first line which involved the VCO_INACTIVE register)
+# as the Slave_VCO.txt file found on the Slave ISU in the /home/primary/vco folder.
+# Because the contents of the /home/primary/vco folder are stored in Flash memory,
+# these files also describe the contents of the VCO Ramp Table immediately after
+# the ISU has powered up.
+
+vvaFile = "VVA_FF.vva"
+isuConfig = "s100v2_isu1_registers.txt"
+isuRevision = "engr1.0"
+# 2 - old process where rwrs had to be started
+# 3 - current setup where rwrs is part of isu code
+# 99 - no ISU present, test use only 
+commChannel = 3
+serialPort = 1
+MASTER = "10.0.3.2"
+SLAVE = "10.0.2.2"
+prescalarfilename = "VcoFreqs.txt"
+prescaleWidth = 10200
+# Note that prescaleWidth should correspond to the PSCALE_ACTIVE value in s100v2_isuX_registers.txt
+ifOffset = 0
+prescaleStopFreq = 30.1
+mechScanCount = 224
+#minMastResponse = -6.0
+#maxMastResponse = 6.0
+#maxMastExcursion = 3.0
+
+# fftWindow  0 - none    Note that anything except none results in amplitude changes.
+#            1 - Hann
+#            2 - Hamming
+#            3 - Blackman-Harris
+#            4 - Flat top
+fftWindow = 0
+
+#
+# New stuff added for zero padding array
+#
+# To gain additional frequency resolution for the peak frequency output, the array 
+# can be zero padded.  The following parameter is multiplied by the actual samples to 
+# generate a longer sample array before being transformed.
+# i.e. 64 samples with multipler of 4 corresponds to an array of 256, resulting in 25 KHz
+# buckets instead of approx 200 KHz. 
+zeroPadMultiplier = 4
+defaultNumMastTestAverages = 1
+
+##
+# Accomodate V3ISU Tester Board.
+#
+V3IsuTesterBrdRegisterFileName = "RegisterBreakoutForTreeControl_V3ISUTesterBrd.txt"
+bHasV3IsuTesterBrd = 1
+
+[adc]
+samples = 64
+bits = 12
+range = 3.0
+dbRange = 60
+# In the FCCISU 66.6666 MHz crystal * (23/15) / AP = 102.222 / 8 MHz = 12.777 MHz
+# In the V2ISU  40.0000 MHz crystal * (23/9)  / AP = 102.222 / 8 MHz = 12.777 MHz
+sampleRate = 12.78e6
+plotBwMhz = 6.0
+
+[vco]
+dacValues = 1024
+maxVoltage = 14.0
+res = 400
+cap = 1.0e-9
+#vcoRampLen = 276   duplicates vcoRampLen defined in [ISUparameter] section which is the value Scott's program uses
+startFreq = 24.0
+stopFreq = 30.0
+sampleStart = 20
+dacSample = 2
+fpgaClock = 9.80392e-9
+freqOffset = -70.0
+delayLength = 24.0
+tuneOffset = 0.05
+vcoInactiveAddr = 0xFD000044
+slopeTolerance = 0.4
+
+[vva]
+pulseModOn = 0
+pulseModOff = 1023
+
+[ISUparameter]
+configRegAddr = 0xFD000000
+configRegLen  = 47
+vcoRampAddr = 0xFD004000
+vcoRampLen  = 285
+vvaRampAddr = 0xFD005000
+vvaRampLen  = 285
+startDataAddr = 0x000000
+
+[simulatedSignal]
+# Test purposes only
+frequency = 1.5e6
+freqShift = 50.0
+IQphase = 90
+scale = 1.0
+# 1 = randomize amplitudes from scan to scan, 0 = fixed to scale value 
+RandomAmpl = 1   
+
+# ********  Mast Test "cal target minus empty radome" Pass/Fail Limits ********
+
+[MastTestLimits]
+
+# All of the items in this [MastTestLimits] section
+# should have the following number of possible values.
+numberOfGroups = 4
+defaultGroup = 1
+
+limitDesc1 = "FAT Cal Target-open Rev 1.0"
+limitDesc2 = "Final Test Cal Target-open Rev 1.0"
+limitDesc3 = "Final Test Cal Tube-open Rev 1.0"
+limitDesc4 = "Endwave mast Rev 1.0"
+
+#
+# Are pass/fail limits enforced?
+#
+limitsActive1 = 1
+limitsActive2 = 1
+limitsActive3 = 1
+limitsActive4 = 1
+
+#
+# Min and max target frequency, usually cal tube or plate, value in MHz
+#
+minTargetFreq1 = -0.83
+minTargetFreq2 = -0.80
+minTargetFreq3 = -0.78
+minTargetFreq4 = -0.87
+
+maxTargetFreq1 = -0.55
+maxTargetFreq2 = -0.58
+maxTargetFreq3 = -0.6
+maxTargetFreq4 = -0.62
+
+#
+# Min and max limits for antenna block averages
+#
+minBlockAvg1 = -6.0
+minBlockAvg2 = -5.2
+minBlockAvg3 = -11.5
+minBlockAvg4 = -4.2
+
+maxBlockAvg1 = 8.5
+maxBlockAvg2 = 7.5
+maxBlockAvg3 = 3.0
+maxBlockAvg4 = 4.0
+
+#
+# Maximum delta in block averages over the mast
+#
+maxBlockDelta1 = 4.2
+maxBlockDelta2 = 4.0
+maxBlockDelta3 = 4.2
+maxBlockDelta4 = 3.7
+
+#
+# Maximum deviation of individual antennas from block average
+# Note that the bottom block has a separate spec due to multipath issues compromising measurement
+# and antenna samples 1 and 384 are completely excluded from this spec.
+#
+maxAntennaDelta1 = 5.5
+maxAntennaDelta2 = 5.1
+maxAntennaDelta3 = 5.5
+maxAntennaDelta4 = 5.1
+
+maxTopAntDelta1 = 13
+maxTopAntDelta2 = 11.75
+maxTopAntDelta3 = 13
+maxTopAntDelta4 = 9.0
+
+maxBottomAntDelta1 = 13
+maxBottomAntDelta2 = 11.75
+maxBottomAntDelta3 = 13
+maxBottomAntDelta4 = 9.0[test]
+
+
+[baseline]
+# 
+# This measurement compares the mast magnitude to a previously stored magnitude plot.  This is used to detect
+# changes in the mast performance over time.  The specification is for the maximum change in magnitude
+# from a baseline measurement.
+#
+limitDesc = "Baseline Rev 0.1"
+# The maximum allowable deviation from baseline measurement.
+maxMagnitudeDelta = 2.5
+# This scales the plot minimum and maximum to the spec value (i.e. spec = 2.5, scale = 4, plot range +- 10 dB)
+baselinePlotScale = 4.0
+
+
+[v3isu]
+#V3Isu0FpgaRegisterFileName = "v3isu0_registers_0011.txt"
+V3Isu0FpgaRegisterFileName = "v3isu0_registers_0011_Am1Only.txt"
+
+#V3Isu1FpgaRegisterFileName = "v3isu1_registers_0011.txt"
+V3Isu1FpgaRegisterFileName = "v3isu1_registers_0011_Am1Only.txt"
+
+# NumLogicalAntennas = 45 + (7*48) + 45 = 426 is the normal case (i.e. "full mast operated normally")
+# for the quasi-monostatic architecture where 2 Demod channels are simultaneously active
+# (whenever possible). Note that this requires that the DMA Destination Buffer
+# be sized to (4bytes/freq) * (256 freqs/ant) * (426 ants/scanline) * 240 scanlines = 105 Mbytes.
+#NumLogicalAntennas = 426
+
+# NumLogicalAntennas = 42 is used when only 1 AM is available.
+# AM1 has only its Demod1 active for the first 3 chirps (creating 3 antenna pairings).
+# Then AM1 has exactly two Demod channels active for 18 chirps (creating 36 antenna pairings).
+# Then AM1 has only Demod4 active for 3 chirps (creating 3 antenna pairings). 
+# This totals to 42 antenna pairings.
+# This antenna activation sequence is described in AmCombinedTables...Am1Only.txt.
+NumLogicalAntennas = 42
+
+# NumLogicalAntennas = 90 is used when only 2 AMs are available. 
+# AM1 has only its Demod1 active for the first 3 chirps (creating 3 antenna pairings).
+# Then AM1 has exactly two Demod channels active for 18 chirps (creating 36 antenna pairings).
+# Then AM1 has only Demod4 active for 6 chirps (creating 6 antenna pairings). During
+# these same 6 chirps AM2 has its Demod1 active (creating another 6 antenna pairings).
+# Note that AM1 and AM2 take turns providing the Tx antenna during these 6 chirps.
+# Then AM2 has only Demod4 active for 3 chirps (creating 3 antenna pairings). 
+# This totals to 90 antenna pairings.
+# This antenna activation sequence is described in AmCombinedTables...Am1ThruAm2.txt.
+#NumLogicalAntennas = 90
+
+# NumLogicalAntennas = 138 is used when only 3 AMs are available. 
+# AM1 has only its Demod1 active for the first 3 chirps (creating 3 antenna pairings).
+# Then AM1 has exactly two Demod channels active for 18 chirps (creating 36 antenna pairings).
+# Then AM1 has only Demod4 active for 6 chirps (creating 6 antenna pairings). During
+# these same 6 chirps AM2 has its Demod1 active (creating another 6 antenna pairings).
+# Note that AM1 and AM2 take turns providing the Tx antenna during these 6 chirps.
+# Then AM2 has exactly two Demod channels active for 18 chirps (creating 36 antenna pairings).
+# Then AM2 has only Demod4 active for 6 chirps (creating 6 antenna pairings). During
+# these same 6 chirps AM3 has its Demod1 active (creating another 6 antenna pairings).
+# Note that AM2 and AM3 take turns providing the Tx antenna during these 6 chirps.
+# Then AM3 has exactly two Demod channels active for 18 chirps (creating 36 antenna pairings).
+# Then AM3 has only Demod4 active for 3 chirps (creating 3 antenna pairings).
+# This totals to 138 antenna pairings.
+# This antenna activation sequence is described in AmCombinedTables...Am1ThruAm3.txt.
+#NumLogicalAntennas = 138
+
+# NumLogicalAntennas = 282 is used when only 6 AMs are available. 
+#NumLogicalAntennas = 282
+
+# NumLogicalAntennas = 127 is used with the AmCombinedTables...Am1Only_Tx1Rx1Only.txt file
+# which specifies a consistent chirp that repeats as many times as is allowed by the
+# size of the Antenna Select and DemodX Data Destination Tables. Even though
+# this is really a consistent Tx/Rx antenna pairing, we tell FieldTest.exe to treat
+# these as separate logical antennas.
+#NumLogicalAntennas = 128
+
+# NumLogicalAntennas = 1 is used with the AmCombinedTables...EngrStation.txt file
+# which specifies a fake scanline (mini scanline) that consists of only a single chirp
+# being sensed by a single Tx/Rx antenna pairing.
+#NumLogicalAntennas = 1
+
+# NumLogicalAntennas = 54 is used when the "AM Stand-in" design (running on Mercury hardware)
+# is used and only a single AM is attached. This AM1 has 27 antenna pairings and since
+# 2 demod channels are always active, 2 * 27 = 54 chirps worth of AtoD data are generated.
+#NumLogicalAntennas = 54
+
+NumScanlines = 240
+
+FirstActiveAM = 1
+LastActiveAM = 0
+bHaveRFSM = 1
+
+bHaveMercuryAM = 1
+MaxNumSimultaneousDemodChannels = 2
+
+bBurnAFewScanlinesAtStartup = 0
+bPowerDownMastAtStartup = 1
+bSanityCheckAmTables = 1
+bSwapIandQ = 0
+
+SingleAntennaPlotLimits = .6
+SingleAntennaPlotNumTics = 7
+
+bShowMastTestPassFailLimitsOnPlot = 0
+bJudgeMastTestAgainstPassFailLimits = 0
+MastTestPassFailLimitsFileName = "MercuryMastTestPassFailLimits.txt"
+
+
+bUnshuffleAntData = 1
+AntennaOrderFileName = "MercuryAmAntennaOrder_2Demods.txt"
+bZeroPadAntData = 1
+
+#AmCombinedTableFileName = "AmCombinedTables_WithRunningStart.txt"
+AmCombinedTableFileName = "AmCombinedTables_WithRunningStart_Am1Only.txt"
+
+AmVvaTableFileName = "AmVvaTable_10Changes_MinAtten.txt"
+#AmVvaTableFileName = "AmVvaTable_10Changes_DifferentPatternForEachTxAnt.txt"
+#AmVvaTableFileName = "AmVvaTable_1Change_MinAtten.txt"
+
+#RfsmRegFileName = "RFSM_Registers_WithRunningStart.txt"
+RfsmRegFileName = "RFSM_Registers_WithRunningStart_Am1Only.txt"
+
+#DmaTransferTableFileName = "DmaTable_AllAms_2Demods.txt"
+DmaTransferTableFileName = "DmaTable_Am1Only_2Demods.txt"
+
+V3IsuFpdDeserializerRegFileName = "DS90UB928Q_V3ISU_Registers_Min.txt"
+#V3IsuFpdDeserializerRegFileName  = "DS90UB928Q_V3ISU_Registers_Full.txt"
+
+AmFpdSerializerRegFileName      = "DS90UB925Q_AM_Registers_Min.txt"
+#AmFpdSerializerRegFileName       = "DS90UB925Q_AM_Registers_Full.txt"
+
+V3IsuFpdSerializerRegFileName   = "DS90UB925Q_V3ISU_Registers_Min.txt"
+#V3IsuFpdSerializerRegFileName    = "DS90UB925Q_V3ISU_Registers_Full.txt"
+
+RfsmFpdDeserializerRegFileName  = "DS90UB926Q_RFSM_Registers_Min.txt"
+#RfsmFpdDeserializerRegFileName   = "DS90UB926Q_RFSM_Registers_Full.txt"
+
+
+VcoCalAlg = "SplineFitWithRunningStart"
+#VcoCalAlg = "SplineFit"
+#VcoCalAlg = "SplineFitWithRunningStartAndWings"
+#VcoCalAlg = "SplineFitWithWingsOnly"
+
+# This VcoCalAlg parameter becomes the szTechnique variable which is used in RecomputeV3IsuVcoRampTableStandalone().
+# The choices for VcoCalAlg are:
+#   - 3rdOrderPoly                       which means RecomputeV3IsuVcoRampTableStandalone() will delegate to ComputeRfsmTableUsing3rdOrderPolyAlgorithm()
+#   - MatchFile                          which means RecomputeV3IsuVcoRampTableStandalone() will delegate to ComputeRfsmTableBasedOnTxtFileProfile()
+#   - SplineFit                          which means RecomputeV3IsuVcoRampTableStandalone() will delegate to RecomputeV3IsuVcoRampTableUsingSplineFit(bAddRunningStart=FALSE, bAddWings=FALSE)
+#   - SplineFitWithRunningStart          which means RecomputeV3IsuVcoRampTableStandalone() will delegate to RecomputeV3IsuVcoRampTableUsingSplineFit(bAddRunningStart=TRUE,  bAddWings=FALSE)
+#   - SplineFitWithRunningStartAndWings  which means RecomputeV3IsuVcoRampTableStandalone() will delegate to RecomputeV3IsuVcoRampTableUsingSplineFit(bAddRunningStart=TRUE,  bAddWings=TRUE )
+#   - SplineFitWithWingsOnly             which means RecomputeV3IsuVcoRampTableStandalone() will delegate to RecomputeV3IsuVcoRampTableUsingSplineFit(bAddRunningStart=FALSE, bAddWings=TRUE )
+#   - BinarySearch                       which means RecomputeV3IsuVcoRampTableStandalone() will delegate to RecomputeV3IsuVcoRampTableUsingBinarySearch()
+
+ErrorReportingLimit = 30
+# This ErrorReportingLimit parameter becomes the uiErrorReportingLimit variable which is used in
+# InspectMemoryFromFakeDataGenerator(). An ErrorReportingLimit of 0 means "display all errors".
+
+
+[v3isu_adc]
+bits = 12
+range = 2.0
+sampleRate = 18.75e6

@@ -1,0 +1,3 @@
+Gantry Controller S/N, Bench Name
+81246,WAM_PROD_TEST-1
+76031,WAM_PROD_TEST-2

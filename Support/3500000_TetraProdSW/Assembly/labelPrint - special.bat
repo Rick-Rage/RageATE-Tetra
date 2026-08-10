@@ -1,0 +1,1 @@
+"C:\Program Files\Seagull\BarTender 2022\bartend.exe" /AF= "%~dp0RaGE_label2.btw"  /PRN="i3300" /P /X

@@ -1,0 +1,260 @@
+; This version of my DS90UB925Q chip initialization file performs the minimal steps
+; necessary at power-up. Note that after we test this chip's registers (which involves
+; writing arbitrary values into them) the initialization shown in this minimal version
+; will NOT be sufficient to bring the chip back into normal operation. Hence after
+; a test regiment you will need to use the "full" version of this initialization file.
+
+; A semi-colon indicates a comment line.
+; The format of the non-comment lines is:
+; RegName  RegValue
+; A RegValue can be expressed in hex if preceded by 0x or 0X.
+; For those registers that consist of separate bit fields the subsequent comment lines describe:
+;   LSBit   NumBits  Unsigned/Signed  FieldName  Explanation
+; The read-only registers (such as ?, etc.) are identified in comment lines.
+
+;I2cDeviceId             0x18
+;  1  7  Unsigned  DeviceID     7-bit address of serializer
+;  0  1  Unsigned  ID_Setting   if 1 DeviceID is from reg, if 0 from IDx pin
+; Don't write to this register because we want the resistive divider to set the chip's I2C address.
+
+;Reset                    0x00
+;  7  1  Unsigned  RemoteAutoPowerDown  power down when no bidi control channel link is detected
+;  2  5  Unsigned  Reserved             these bits are reserved
+;  1  1  Unsigned  DigitalReset1        resets the entire digital block including the registers
+;  0  1  Unsigned  DigitalReset0        resets the entire digital block except for the registers
+; We don't need to initialize this register because our desired value is already the chirp's power-on default value.
+
+Configuration0           0xDA
+;  7  1  Unsigned  BackChannelCrcChecker  enable back channel CRC check
+;  6  1  Unsigned  Reserved               this bit is reserved
+;  5  1  Unsigned  I2cRemoteWriteAutoAcknowledge  automatically acknowledge I2C remote write
+;  4  1  Unsigned  FilterEnable           enable filter that rejects HS, VS, or DE pulses narrower than 2 PCLKs
+;  3  1  Unsigned  I2cPassThruMode        enable pass-through mode
+;  2  1  Unsigned  Reserved               this bit is reserved
+;  1  1  Unsigned  PCLK_Auto              auto switch over to the internal osc. in the absence of PCLK
+;  0  1  Unsigned  PixelClockEdgeSelect   parallel interface is strobed on the rising clock edge
+; The power-on default value for the Configuration0 reg is 0xD2 which lacks the "I2C Passthru" bit.
+
+;Configuration1           0x80
+;  7  1  Unsigned  InputFailSafeState           if 1 failsafe to low, if 0 failsafe to high
+;  6  1  Unsigned  Reserved                     this bit is reserved
+;  5  1  Unsigned  CrcErrorReset                clear back channel CRC error counter
+;  4  1  Unsigned  RGB_DE_Gate                  gate RGB Data with DE
+;  3  1  Unsigned  BackwardCompatibilitySelect  if 1 backward compatibility mode is set by register, if 0 by MODE_SEL pin
+;  2  1  Unsigned  BackwardCompatibilityMode    be backward compatible with DS90UR906Q
+;  1  1  Unsigned  LfModeSelect                 if 1 frequency range is set by register, if 0 by LFMODE (accomplished with MODE_SEL pin)
+;  0  1  Unsigned  LfMode                       if 1 PCLK range 5-15 MHz, if 0 15-85 MHz
+; We don't need to initialize this register because our desired value is already the chirp's power-on default value.
+
+;I2cControl1              0x00
+;  5  3  Unsigned  Reserved             these bits are reserved
+;  3  2  Unsigned  SDA_OutputDelay      if 00 240 nsec, if 01 280 nsec, if 10 320 nsec, if 11 360 nsec
+;  2  1  Unsigned  LocalWriteDisable    disable remote writes to local device registers
+;  1  1  Unsigned  I2cBusTimerSpeed     if 1 I2C bus watchdog timer expires after 50 ms, if 0 after 1 sec
+;  0  1  Unsigned  I2cBusTimerEDisable  disable the I2C bus watchdog timer that attempts to clear a hung bus
+; We don't need to initialize this register because our desired value is already the chirp's power-on default value.
+
+;RemoteDeviceID           0x58
+;  1  7  Unsigned  DeserializerDeviceID   I2C address of the remote deserializer
+;  0  1  Unsigned  DesDeviceIdFrozen      prevents autoloading of I2C address of remote deserializer
+; We don't want to write to this reg because we want it to display the remote device that the chip automatically discovers.
+
+; Note that the 925 automatically learns the I2C slave device address 
+; of the attached 926 and then places that value into its RemoteDeviceID reg
+; (which the 925 data sheet calls the DES_ID reg but I prefer "RemoteDeviceID"
+; to be symmetric with the corresponding 926 register name as described on pg 36
+; of the 926 datasheet).
+
+SlaveID                  0xA4
+;  1  7  Unsigned  SlaveDeviceID          I2C address of the remote slave device attached to the remote deserializer
+;  0  1  Unsigned  Reserved               this bit is reserved
+; The FPGA on the Cyterra RFSM has a default 7-bit I2C slave dev addr of 0x52
+; which is the 8-bit 0xA4. In order to be able to cause the remote 926 to
+; proxy I2C transactions intended for it we must load the load 925's SlaveID
+; and SlaveAlias reg with the 8-bit value 0xA4 and then target an imaginary
+; local I2C device at the 7-bit I2C slave dev addr 0x52
+
+SlaveAlias               0xA4
+;  1  7  Unsigned  SlaveDeviceAlias       I2C address that will be remapped to the remote slave device attached to the remote deserializer
+;  0  1  Unsigned  Reserved               this bit is reserved
+
+;CrcErrorsLSB             0x00
+;  0  8  Unsigned  NumBackChannelCrcErrorsLSB   8 least sig digits of number of back channel CRC errors
+; This is a read-only register.
+
+;CrcErrorsMSB             0x00
+;  0  8  Unsigned  NumBackChannelCrcErrorsMSB   8 most sig digits of number of back channel CRC errors
+; This is a read-only register.
+
+;GeneralStatus            0x05
+;  4  4  Unsigned  Reserved               these bits are reserved
+;  3  1  Unsigned  BistCrcError           back channel CRC error detected during BIST
+;  2  1  Unsigned  PclkDetect             valid PCLK detected
+;  1  1  Unsigned  DesError               back channel CRC error
+;  0  1  Unsigned  LinkDetectStatus       if 1 cable link is detected, if 0 fault condition
+; This is a read-only register.
+
+;GPIO_0Config             0xA0
+;  4  4  Unsigned  Revision           production revision
+;  3  1  Unsigned  Gpio0LocalValue    value for GPIO_0 output when remote GPIO control is disabled
+;  2  1  Unsigned  Gpio0RemoteEnable  enable GPIO_0 control from remote deserializer
+;  1  1  Unsigned  Gpio0Direction     if 1 GPIO_0 is an input,  if 0 an output
+;  0  1  Unsigned  Gpio0Enable        enable GPIO_0 operation
+; We don't need to initialize this register because our desired value is already the chirp's power-on default value.
+
+;GPIO_1and2Config         0x00
+;  7  1  Unsigned  Gpio2LocalValue    value for GPIO_2 output when remote GPIO control is disabled
+;  6  1  Unsigned  Gpio2RemoteEnable  enable GPIO_2 control from remote deserializer
+;  5  1  Unsigned  Gpio2Direction     if 1 GPIO_2 is an input,  if 0 an output
+;  4  1  Unsigned  Gpio2Enable        enable GPIO_2 operation
+;  3  1  Unsigned  Gpio1LocalValue    value for GPIO_1 output when remote GPIO control is disabled
+;  2  1  Unsigned  Gpio1RemoteEnable  enable GPIO_1 control from remote deserializer
+;  1  1  Unsigned  Gpio1Direction     if 1 GPIO_1 is an input,  if 0 an output
+;  0  1  Unsigned  Gpio1Enable        enable GPIO_1 operation
+; We don't need to initialize this register because our desired value is already the chirp's power-on default value.
+
+;GPIO_3and4Config         0x00
+;  7  1  Unsigned  Gpio4LocalValue    value for GPIO_4 output when remote GPIO control is disabled
+;  5  2  Unsigned  Reserved           these bits are reserved
+;  4  1  Unsigned  Gpio4Enable        enable GPIO_4 operation
+;  3  1  Unsigned  Gpio3LocalValue    value for GPIO_3 output when remote GPIO control is disabled
+;  2  1  Unsigned  Gpio3RemoteEnable  enable GPIO_3 control from remote deserializer
+;  1  1  Unsigned  Gpio3Direction     if 1 GPIO_3 is an input,  if 0 an output
+;  0  1  Unsigned  Gpio3Enable        enable GPIO_3 operation
+; We don't need to initialize this register because our desired value is already the chirp's power-on default value.
+
+;GPIO_5and6Config         0x00
+;  7  1  Unsigned  Gpio6LocalValue    value for GPIO_6 output when remote GPIO control is disabled
+;  5  2  Unsigned  Reserved           these bits are reserved
+;  4  1  Unsigned  Gpio6Enable        enable GPIO_6 operation
+;  3  1  Unsigned  Gpio5LocalValue    value for GPIO_5 output when remote GPIO control is disabled
+;  1  2  Unsigned  Reserved           these bits are reserved
+;  0  1  Unsigned  Gpio5Enable        enable GPIO_5 operation
+; We don't need to initialize this register because our desired value is already the chirp's power-on default value.
+
+;GPIO_7and8Config         0x00
+;  7  1  Unsigned  Gpio8LocalValue    value for GPIO_8 output when remote GPIO control is disabled
+;  5  2  Unsigned  Reserved           these bits are reserved
+;  4  1  Unsigned  Gpio8Enable        enable GPIO_8 operation
+;  3  1  Unsigned  Gpio7LocalValue    value for GPIO_7 output when remote GPIO control is disabled
+;  1  2  Unsigned  Reserved           these bits are reserved
+;  0  1  Unsigned  Gpio7Enable        enable GPIO_7 operation
+; We don't need to initialize this register because our desired value is already the chirp's power-on default value.
+
+;DatapathControl          0x00
+;  6  2  Unsigned  Reserved                    these bits are reserved
+;  5  1  Unsigned  DE_Polarity                 if 1 DE is active low, if 0 DE is active high
+;  4  1  Unsigned  I2sRepeaterRegen            if 1 regenerate I2S from I2S pins, if 0 pass through I2s from video pins
+;  3  1  Unsigned  I2sChannelBEnableOverride   if 1 set I2S channel B enable from register, if 0 based on MODE_SEL pin
+;  2  1  Unsigned  18bitVideoSelect            select 18-bit video mode
+;  1  1  Unsigned  I2sTransportSelect          enable I2S data forward channel frame transport
+;  0  1  Unsigned  I2sChannelBEnable           enable I2S channel B based on B1 input pin
+; We don't need to initialize this register because our desired value is already the chirp's power-on default value.
+
+;OscClockSource           0x00
+;  3  5  Unsigned  Reserved           these bits are reserved
+;  1  2  Unsigned  OscClockSource     if 00 ext pixel clk, if 01 33 MHz int osc, (10 reserved), if 11 25 MHz int osc
+;  0  1  Unsigned  BistEnabled        BIST enabled
+; We don't need to initialize this register because our desired value is already the chirp's power-on default value.
+
+; The Analog LaunchPAD app shows a "Deemphasis Control" register here
+; (at register address 0x15 = 21 but the 925 datasheet doesn't mention this.
+
+;BCCWatchdogControl       0xFE
+;  1  6  Unsigned  WatchdogTimerValue     back channel watchdog timer timeout in units of 2 msec
+;  0  1  Unsigned  WatchdogTimerControl   disable back channel watchdog timer
+; We don't need to initialize this register because our desired value is already the chirp's power-on default value.
+
+;I2cControl2              0x5E
+;  7  1  Unsigned  I2cPassAll         if 1 enable forward pass-through of all I2C accesses that do not match the Serializer ID\n if 0 enable forward pass-through only of deserializer or slave device ID
+;  6  1  Unsigned  Reserved           this bit is reserved
+;  4  2  Unsigned  SDA_HoldTime       SDA hold time in units of 40 nsec
+;  0  4  Unsigned  I2cFilterDepth     glitch filter width in units of 5 nsec
+; We don't need to initialize this register because our desired value is already the chirp's power-on default value.
+
+SclHighTime                50
+;  0  8  Unsigned  SCL_HighTime   SCL high time in units of 40 nsec
+
+; The default value of 0xA1 (161) for SclHighTime and 0xA5 (165) for SclLowTime
+; cause the SCL clock to display a < 100 kHz frequency. If you want a 100 kHz
+; then set these 2 registers to 100. If you want 200 kHZ then use 50.
+; If you want 400 kHz then use 25.
+
+SclLowTime                 50
+;  0  8  Unsigned  SCL_LowTime    SCL low time in units of 40 nsec
+
+;BistBcError              0x00
+;  0  8  Unsigned  BISTBackChannelCRCErrorCount  count of CRC errors during BIST
+; The Analog LaunchPAD app doesn't list this BistBcError reg at all (but the
+; datasheet shows it at address 0x1B = 27)
+; This is a read-only register.
+
+; The Analog LaunchPAD app shows a "Link Detect Control" at reg address 0x26 = 38.
+
+;PatternGeneratorControl  0x10
+;  4  4  Unsigned  PatternSelect      select among the built-in colorbar patterns
+;  1  3  Unsigned  Reserved           these bits are reserved
+;  0  1  Unsigned  PatternGenEnable   enable the video pattern generator
+; We don't need to initialize this register because our desired value is already the chirp's power-on default value.
+
+;PatternGeneratorConfig   0x00
+;  5  3  Unsigned  Reserved           these bits are reserved
+;  4  1  Unsigned  18bitMode          enable 18-bit color mode
+;  3  1  Unsigned  ExternalClock      if 1 use external PCLK, if 0 use internally generated clock
+;  2  1  Unsigned  TimingSelect       if 1 pattern generator creates its own video timing, if 0 it uses externally supplied timing
+;  1  1  Unsigned  ColorInvert        invert the color output
+;  0  1  Unsigned  AutoScrollEnable   enables the Pattern Generator to automatically move to the next enabled pattern
+; We don't need to initialize this register because our desired value is already the chirp's power-on default value.
+
+;PatternGenIndirectAddr   0x00
+;  0  8  Unsigned  IndirectAddress    the address of an indirectly mapped register
+; We don't need to initialize this register because our desired value is already the chirp's power-on default value.
+
+;PatternGenIndirectData   0x00
+;  0  8  Unsigned  IndirectData       the data to be written to an indirect register
+; We don't need to initialize this register because our desired value is already the chirp's power-on default value.
+
+;InterruptControl         0x00
+;  6  2  Unsigned  Reserved           these bits are reserved
+;  5  1  Unsigned  RxInt              allows propagation of interrupts from downstream devices
+;  1  4  Unsigned  Reserved           these bits are reserved
+;  0  1  Unsigned  InterruptEnable    enables interrupts on the INTB pin
+; We don't need to initialize this register because our desired value is already the chirp's power-on default value.
+; The Analog LaunchPAD app doesn't list this InterruptControl reg (which the
+; datasheet shows at address 0xC6 = 198).
+
+;InterruptStatus          0x00
+;  6  2  Unsigned  Reserved           these bits are reserved
+;  5  1  Unsigned  RxInt              the receiver is indicating an interrupt request from a downstream device
+;  1  4  Unsigned  Reserved           these bits are reserved
+;  0  1  Unsigned  Interrupt          set if any enabled interrupt is indicated
+; This is a read-only register.
+; The Analog LaunchPAD app doesn't list this InterruptStatus reg (which the
+; datasheet shows at address 0xC7 = 199).
+
+;ID0                      0x5F
+;  0  8  Unsigned  ID0          first byte of serializer ID
+; This is a read-only register.
+
+;ID1                      0x55
+;  0  8  Unsigned  ID1          second byte of serializer ID
+; This is a read-only register.
+
+;ID2                      0x42
+;  0  8  Unsigned  ID2          third byte of serializer ID
+; This is a read-only register.
+
+;ID3                      0x39
+;  0  8  Unsigned  ID3          fourth byte of serializer ID
+; This is a read-only register.
+
+;ID4                      0x32
+;  0  8  Unsigned  ID4          fifth byte of serializer ID
+; This is a read-only register.
+
+;ID5                      0x35
+;  0  8  Unsigned  ID5          sixth byte of serializer ID
+; This is a read-only register.
+
+; Note that these ID1-ID5 registers spell out "_UB925" in ASCII.
+; Note that the 925 chip returns zeros for these bytes if the I2C read request originates from a remote 926.

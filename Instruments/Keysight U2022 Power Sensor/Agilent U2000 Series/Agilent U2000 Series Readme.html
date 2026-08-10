@@ -1,0 +1,182 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+  <title>Agilent U2000 Series Instrument Driver Readme</title>
+</head>
+<body>
+<h2>Agilent U2000 Series Instrument Driver Readme</h2>
+<para>To rate this instrument driver, go to the driver download page on the <a href="http://www.ni.com/idnet">Instrument Driver Network</a>.</para>
+<h4>1. Overview</h4>
+<para>Instrument Driver Technology: LabVIEW Plug and Play (project-style)
+<br>Manufacturer: Agilent
+<br>Supported Language(s): LabVIEW
+<br>Supported Model(s): U2000A,U2001A,U2002A,U2004A,U2001H,U2000H,U2002H,U2000B,U2001B,U2021XA,U2022XA,U2041XA,U2042XA,U2043XA,U2044XA,U2049XA
+<br>Model(s) Tested: U2000A, U2021XA, U2041XA, U2042XA, U2049XA
+<br>Interface(s): USB
+<br>Firmware Revision(s) Tested: A1.03.01 (U2000A), A.01.00 (U2021XA), A1.03.05 (U2001A), A.01.02(U2041XA), A.02.00(U2042XA), A.02.00(U2049XA)<br>
+<br>Certified: Yes
+<br>NI Supported: Yes
+<br>Source Code Available: Yes
+<br>
+<br>Driver Revision: 1.2.1
+<br>Original Release Date: 09/01/2011</font>
+<br>Current Revision Date: 07/13/2015</para>
+
+<h4>2. Required Software</h4>
+<para>Some software components need to be installed before using this instrument driver. The minimum versions of these components are listed below, and can be downloaded from the Download Site.
+<br><br>VISA 5.0 or later
+<br><br>Refer to the <i>LabVIEW Help</i> for more information about software requirements. You access the <i>LabVIEW Help</i> by selecting <i>Help&raquo;Search the LabVIEW Help</i>.</para>
+
+<h4>3. Known Issues</h4><para>
+
+
+To report issues or provide feedback about this instrument driver,  <a href="http://www.ni.com/en-us/support.html">please contact technical support</a>.</para></font>
+
+
+<h4>4. Revision History</h4>
+<para>The latest version of this and other LabVIEW and LabWindows/CVI instrument drivers can be downloaded at the <a href="http://www.ni.com/idnet">Instrument Driver Network</a>.<br>
+<br>REV 1.0, 09/01/2011<br></font></para> Created by: Xueting Tan, Shang Hai, China.<br><para>Original release.<br>
+<br>REV 1.0.1, 09/30/2011<br></font></para>Modified by: NI<br>
+<para>Added the missing Query FDT Memory.vi on the Action/Status palette.<br>
+<br>REV 1.1, 09/07/2012<br></font></para>Modefied by: Hailin Chen, NI<br>
+<br><para>Update VIs supporting U2021XA,U2022XA<br>
+Clear Limit Failure.vi<br>
+Query Range Test.vi<br>
+Configure Auto Zero.vi<br>
+Configure Averaging.vi<br>
+Configure Limit Test.vi<br>
+Configure Range.vi<br>
+Configure Trace.vi<br>
+Configure Trigger.vi<br>
+Configure Units.vi<br>
+Initialize.vi</para><br>
+<br><para>Add VIs supporting U2021XA,U2022XA<br>
+Example:<br>
+Agilent U2000 Series Acquire Measurement Characteristic.vi<br>
+Agilent U2000 Series Acquire Reference Trace.vi<br>
+Agilent U2000 Series Range Test Characteristic.vi<br>
+<br>Public:<br>
+Clear Peak Hold Value.vi<br>
+Configure Auto Calibrate.vi<br>
+Configure Bandwidth.vi<br>
+Configure CCDF.vi<br>
+Configure Impedance.vi<br>
+Configure Measurement Characteristic.vi<br>
+Configure Offset Calculate Block.vi<br>
+Configure Recorder Output Scaling.vi<br>
+Configure Reference Level.vi<br>
+Configure Reference Value.vi<br>
+Configure Sweep CCDF.vi<br>
+Configure Sweep Characteristic.vi<br>
+Configure Video Averaging.vi<br>
+Read CCDF (Probability and Power Level).vi<br>
+Read CCDF (Reference Trace).vi<br>
+Read CCDF (Table).vi<br>
+Read CCDF (Trace).vi<br>
+Read CCDF.vi<br>
+Read Pulse.vi<br>
+Read Reference Power Level.vi<br>
+Read Time Instant.vi<br>
+Read Transition.vi<br>
+Save CCDF As Reference Trace.vi<br>
+<br>Private:<br>Extended User Data.ctl<br>Extended User Data.vi<br>Parse Data.vi </para><br>
+<br>REV 1.1.1, 01/15/2013<br></font></para>Modified by: Hailin Chen, NI<br>
+<br><para>Update codes in some VIs to fix some bugs.<br>
+Configure Frequency Dependent Table.vi<br>
+Fix "-113: Undefined Header" error when executing "Define Frequency Array" operation.<br>
+Configure Trigger.vi<br>
+Trigger level and hysteresis cannot be set in older version. Fix the issue in this driver.<br>
+Configure Measurement Characteristic.vi<br>
+Add CONF:POW:AC command to this VI.<br></para>
+<br><para>Update context help in some VIs.<br>
+Configure Trigger.vi<br>
+Configure Frequency Dependent Table.vi<br>
+Configure Correction Frequency.vi<br>
+Configure Trace.vi<br>
+Configure Trigger Normal.vi<br>
+Configure Recorder Output Scaling.vi<br></font></para>
+<br>REV 1.1.2, 08/25/2014<br>Modified by: Zhen Wang, NI<br>
+<br><para>Update codes in some VIs to fix some bugs.<br>
+Self-Test.vi<br>
+<li>Fix timeout error by increasing VISA timeout to 100 seconds.<br>
+Read Measurement.vi<br>
+<li>Replace Initiate (Continuous) SubVI with Initiate (Immediate) SubVI.<br>
+Wait for Acquisition Complete.vi<br>
+<li>Replace VISA Read STB function with VISA Write function and VISA Read function.</para><br>
+<br><para>Add VIs.<br>
+Agilent U2000 Series Acquire Measurement Continuously.vi
+<br>REV 1.1.3, 03/2015<br>Modified by: NI<br>Initialize - Updated to include Keysight Technologies along with Agilent as a Manufacturer</para><br>
+<br>REV 1.2, 06/19/2015<br>Modified by: Hongna Li, NI<br><para>
+<br>Added VIs supporting U2040 X-Series (tested models U2041XA, U2042XA).<br>
+Example:<br>
+Agilent U2000 Series Configure Measurements Numbers.vi<br>
+Action-Status:<br>
+Autoscale.vi<br>
+Enable Video Bandwidth.vi<br>
+Reset Average Filter.vi<br>
+Configure:<br>
+Configure Aperture Time.vi<br>
+Configure Exclusion Offset Time.vi<br>
+Configure Frequency Sweep List.vi<br>
+Configure Frequency Sweep.vi<br>
+Configure Gamma Correction.vi<br>
+Configure Measurement Type.vi<br>
+Configure Measurements Number.vi<br>
+Configure Pulse Power.vi<br>
+Configure Slots Number.vi<br>
+Configure Source Gamma Correction.vi<br>
+Configure S-parameter Correction.vi<br>
+Configure TILT Unit.vi<br>
+Configure Time Slot.vi<br>
+Configure Trace Duration.vi<br>
+Configure Trigger Delay.vi<br>
+Configure Trigger Qualification Time.vi<br>
+Configure Triggered Buffer Size.vi<br>
+Configure Measurement Characteristics.vi<br>
+Data:<br>
+Read Pulse Amplitude Power.vi<br>
+Read Source Gamma Magnitude-Phase Pair.vi<br>
+Read S-parameter Magnitude-Phase Pair.vi<br>
+<br>Update VIs supporting U2040 X-Series.<br>
+Extended User Data.ctl<br>
+Initialize.vi<br>
+Clear Limit Failure.vi<br>
+Query Range Test.vi<br>
+Configure Auto Zero.vi<br>
+Configure Averaging.vi<br>
+Configure Limit Test.vi<br>
+Configure Output.vi<br>
+Configure Range.vi<br>
+Configure Sweep.vi<br>
+Configure Trigger.vi<br>
+Configure Units.vi<br>
+Read Pulse.vi<br>
+Read Transition.vi<br>
+<br>Obsoleted VIs:<br>Configure Measurement Characteristic.vi<br></para>
+<br>REV 1.2.1, 07/13/2015<br>Modified by: Hongna Li, NI<br>
+<para><br>Added VIs supporting U2040 X-Series (tested model U2049XA).<br>
+Example:<br>Agilent U2000 Series Configure Gamma Table.vi<br>
+Action-Status:<br>
+Enable Gamma Table.vi<br>
+Enable S-parameter Table.vi<br>
+Configure:<br>
+Configure Gamma Magnitude-Phase Pairs.vi<br>
+Configure Gamma Table.vi<br>
+Configure S-parameter Magnitude-Phase Pairs.vi<br>
+Configure S-parameter Table.vi<br>
+Obsolete:<br>
+Configure Gamma Correction.vi<br>
+Configure S-parameter Correction.vi<br>
+private:<br>
+Configure Table Operation.vi<br>
+Numeric String to Array.vi<br>
+<br>Update code in some VIs to fix some bugs or better maintenance.<br>
+Autoscale.vi<br>
+Read Time Instant.vi<br>
+Configure Frequency Dependent Table.vi<br>
+<br>Add more documentation in some VIs to make better understanding.<br>
+Configure Source Gamma Correction.vi<br>
+Read Source Gamma Magnitude-Phase Pair.vi<br>
+</para>
+</body>
+</html>

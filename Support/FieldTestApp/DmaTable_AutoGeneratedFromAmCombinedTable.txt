@@ -1,0 +1,37 @@
+; This file describes the content for the "DMA Transfer Table" used in the V3ISU's FPGA.
+; Everything after a semi-colon is a comment.
+
+; The format of each line is:
+;   AM identifier (range 1 to 9), quantity of DWORDs (range 1 to 4096)
+
+1, 4096
+1, 4096
+1, 3328
+2, 4096
+2, 4096
+2, 4096
+3, 4096
+3, 4096
+3, 4096
+4, 4096
+4, 4096
+4, 4096
+5, 4096
+5, 4096
+5, 4096
+6, 4096
+6, 4096
+6, 4096
+7, 4096
+7, 4096
+7, 4096
+8, 4096
+8, 4096
+8, 4096
+9, 4096
+9, 4096
+9, 3328
+
+; The end of the table must always be marked with a zero "AM identifier" field.
+
+0, 0

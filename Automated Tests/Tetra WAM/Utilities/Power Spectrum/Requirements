@@ -1,0 +1,11 @@
+This script "plot.py" calculates the power within a specified bandwidth in dBm/Hz.
+
+Requires
+  1. matplotlib
+  2. numpy
+
+The above library can be installed using the following commands
+  pip install matplotlib
+  pip install numpy
+
+This can be done using the command prompt.

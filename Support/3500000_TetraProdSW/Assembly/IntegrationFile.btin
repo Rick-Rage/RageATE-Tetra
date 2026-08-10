@@ -1,0 +1,90 @@
+﻿<IntegrationFile Version="10" ID="fda61196-e232-41c8-80c3-66c5f9b976a6">
+  <ActionGroup ID="5445c876-c7b3-4e3c-a6fc-376186fbbd81" RunMethod="Sequential" MessagingEnabled="false">
+    <Actions>
+      <FileTriggerIntegration Name="File Integration" IgnoreErrors="true" ID="a57bf3a0-57a7-464e-8771-6a59f09eb94f" MultipleServerScanning="true" Filter="*.csv" DetectionExtension="txt">
+        <ActionGroup ID="f780c2e4-a323-4b7d-a4f1-f19dd4f2f5aa" RunMethod="Sequential" MessagingEnabled="false">
+          <Actions>
+            <TransformTextToRecordSetAction Name="Transform Text To Record Set" IgnoreErrors="false" ID="4a160a41-6343-4e2d-beb6-9bb6fa028476">
+              <ConnectionInfo>&lt;?xml version="1.0" encoding="utf-8"?&gt;&#xD;
+&lt;DatabaseSetup xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"&gt;&#xD;
+  &lt;DatabaseConnections&gt;&#xD;
+    &lt;DatabaseConnection Name="@1" Type="TextFile"&gt;codepage=20127;pathname=C:\3500000_TetraProdSW\Assembly\label.csv;format=CSV;field count=2;first record is header=True&lt;/DatabaseConnection&gt;&#xD;
+  &lt;/DatabaseConnections&gt;&#xD;
+  &lt;RecordSets&gt;&#xD;
+    &lt;RecordSet Name="label" Connection="@1" Primary="true"&gt;&#xD;
+      &lt;SelectCommand Custom="false"&gt;SELECT * FROM [label]&lt;/SelectCommand&gt;&#xD;
+      &lt;ProviderParameters&gt;&lt;/ProviderParameters&gt;&#xD;
+      &lt;LastKnownSchema&gt;&#xD;
+        &lt;Field Name="[label].[label].[sn]" Type="String" /&gt;&#xD;
+        &lt;Field Name="[label].[label].[rev]" Type="String" /&gt;&#xD;
+      &lt;/LastKnownSchema&gt;&#xD;
+    &lt;/RecordSet&gt;&#xD;
+  &lt;/RecordSets&gt;&#xD;
+&lt;/DatabaseSetup&gt;</ConnectionInfo>
+              <Text>
+                <Value>%EventData%</Value>
+              </Text>
+            </TransformTextToRecordSetAction>
+            <ForEachDatabaseRecordAction Name="For Each Database Record" ID="520892fa-5af7-482b-a074-c8e93fc053b1" RunMethod="Sequential" MessagingEnabled="false">
+              <Actions>
+                <PrintAction Name="Print Document" IgnoreErrors="false" ID="87b9a976-a49f-4cab-9399-83e764561cc4" ReturnPrintData="true" ReturnLabelData="true" Printer="i3300" CopiesPerSerialNumber="1">
+                  <DocumentFile Path="C:\3500000_TetraProdSW\Assembly\RaGE_label2.btw">
+                    <FileSystem.System />
+                  </DocumentFile>
+                  <NamedDataSources>
+                    <Field Name="rev">%rev%</Field>
+                    <Field Name="serial">%sn%</Field>
+                  </NamedDataSources>
+                  <PrintToFileFolder Path="%IntegrationFileNameWithoutExtension%">
+                    <FileSystem.Temporary />
+                  </PrintToFileFolder>
+                </PrintAction>
+              </Actions>
+              <RecordSet.DataTarget>
+                <Value>%EventData%</Value>
+              </RecordSet.DataTarget>
+            </ForEachDatabaseRecordAction>
+          </Actions>
+        </ActionGroup>
+        <ScanFolder Path="C:\3500000_TetraProdSW\Assembly">
+          <FileSystem.System />
+        </ScanFolder>
+      </FileTriggerIntegration>
+    </Actions>
+  </ActionGroup>
+  <Metadata>
+    <Properties>
+      <Properties Name="MostRecentlyUsedVariables" Type="System.String">
+        <Value>EventData;Response</Value>
+      </Properties>
+      <Properties Name="SelectedDeploymentConfiguration" Type="System.String">
+        <Value>Custom</Value>
+      </Properties>
+      <Properties Name="SelectedIntegration" Type="System.Int32">
+        <Value>0</Value>
+      </Properties>
+      <Properties Name="SelectedOptionsPage" Type="System.String">
+        <Value>1;1;0</Value>
+      </Properties>
+    </Properties>
+  </Metadata>
+  <SourcePath>C:\3500000_TetraProdSW\Assembly\IntegrationFile.btin</SourcePath>
+  <IsPrinting>false</IsPrinting>
+  <IsPrintPreview>false</IsPrintPreview>
+  <DeploymentConfigurations>
+    <DeploymentConfiguration CancelIfIntegrationFileExistsOnTargetServer="false">
+      <Name>Test</Name>
+      <TargetServers>
+        <TargetServer Name="This Computer" Description="" IsServerGroup="false" />
+      </TargetServers>
+      <DeploymentSchedule Method="Immediately" />
+    </DeploymentConfiguration>
+    <DeploymentConfiguration CancelIfIntegrationFileExistsOnTargetServer="false">
+      <Name>Production</Name>
+      <TargetServers>
+        <TargetServer Name="This Computer" Description="" IsServerGroup="false" />
+      </TargetServers>
+      <DeploymentSchedule Method="OnSpecifiedDate" />
+    </DeploymentConfiguration>
+  </DeploymentConfigurations>
+</IntegrationFile>

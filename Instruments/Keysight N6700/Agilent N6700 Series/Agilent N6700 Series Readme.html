@@ -1,0 +1,113 @@
+<html>
+<head>
+<title>Keysight/Agilent N6700 Series Instrument Driver Readme</title>
+</head>
+
+<body>
+<pre>
+<font face = "Times New Roman", size = 3><h2>Keysight/Agilent N6700 Series Instrument Driver Readme</h2>
+To rate this driver, go to the Keysight/Agilent N6700 Series driver download page on the <a href ="http://www.ni.com/idnet">Instrument Driver Network</a>.
+<h4>1. Overview</h4>
+Instrument Driver Technology:  Plug and Play (Project-Style)
+Supported Language(s):  LabVIEW
+Supported Model(s):  N6700A, N6700B, N6701A, N6702A, N6705A, N6705B, N6700C, N6701C, N6702C, N6705C
+Model(s) Tested:  N6700A, N6700B, N6705B, N6701C, N6705C (Keysight)
+Supported Modules: 
+N6731A, N6731B, N6732A, N6732B, N6733A, N6733B, N6734A, N6734B, N6735A,
+N6735B, N6736B, N6741B, N6742A, N6742B, N6743A, N6743B, N6744A, N6744B,
+N6745A, N6745B, N6746B, N6773A, N6774A, N6775A, N6776A, N6777A, N6751A, 
+N6752A, N6753A, N6754A, N6755A, N6756A, N6761A, N6762A, N6763A, N6764A,
+N6765A, N6766A, N6781A, N6782A, N6783A, N6784A, N6785A, N6786A, N6791A,
+N6792A
+Interface(s):  GPIB, Ethernet, USB
+Firmware Revision Tested: D.01.08 (N6700B), D.01.07 (N6705B), D.04.01 (N6700B), E.02.01.3173 (N6701C)
+Certified:  Yes
+NI Supported:  Yes
+Source Code Available:  Yes
+Driver Revision:  3.2
+Original Release Date:  07/2004
+Current Revision Date:  08/2019
+
+<h4>2. Required Software</h4>
+Some software components need to be installed before using this instrument driver. The minimum versions of these components are listed below, and can be downloaded from the Download Site.
+VISA 5.0 or later.
+<h4>3. Known Issues</h4>
+To report issues or provide feedback about this instrument driver,  <a href="http://www.ni.com/en-us/support.html">please contact technical support</a>.
+<h4>4. Revision History</h4>
+The latest version of this and other LabVIEW and LabWindows/CVI instrument drivers can be downloaded at the <a href ="http://www.ni.com/idnet">Instrument Driver Network</a>.
+REV 1.0, 07/2004, Original Release P. Marcalik,  ELCOM, a. s.
+
+REV 1.1, 11/2005, Modified by: Blake McGuire, Austin, TX.
+-Added support for channel grouping via Configure Channel Grouping, Channel Grouping Status and Ungroup Channels
+-Updated valid range documentation in Configure Output Range, Configure Current Limit, Configure OVP, 
+ Configure Voltage Level, Configure Triggered Voltage Level, Configure Triggered Current Limit,
+ Configure Voltage List, Configure Current List, and Configure Measurement Range
+-Fixed typos in documentation
+-Updated VISA Terminals to Required on connector panes
+
+REV 1.2, 04/2007 Modified by: Edward Zhang
+-Added support for new Agilent modules: N6753A, N6754A
+-Added agn6700 Configure Relay Polarity.vi
+-Added agn6700 Limit Channel Power.vi
+
+REV 2.0, 07/15/2009, Modified by: Alvin Tang, Austin, Texas.
+- Original Release for project-style driver created based on version 1.2 of agn6700 Plug and Play Driver.
+
+REV 2.1, 03/21/2012, Modified by: Lars Lindstrom, Austin, Texas.
+- Obsoleted "Configure OVP.vi" as it is not allowed to enable/disable OVP for this instrument
+- Replacement VI is titled "Configure Over Voltage Protection.vi" and it does not have the OVP Enabled control
+
+REV 3.0, 09/05/2012, Modified by: Amir Moghadam, Austin, Texas.
+- Added support for Agilent N6705B DC Power Supply
+- Added support for new Agilent modules: N6755A, N6756A, N6763A, N6764A, N6765A, N6766A, N6777A, 
+  N6781A, N6782A, N6783A, N6784A
+- Added waveform, sequence, data log, and histogram support
+- Obsoleted "Abort.vi"
+- Replacement VI is "Abort Output Trigger.vi"
+- Obsoleted "Initiate.vi"
+- Replacement VI is "Initiate Output Trigger.vi"
+- Corrected "Query Output State.vi" values in the array and removed the 6th element (only 5 Output States)
+- Updated valid range documentation for new modules in Configure Output Range, Configure Current Limit, 
+ Configure Configure Over Voltage Protection, Configure Voltage Level, Configure Triggered Voltage Level, 
+ Configure Triggered Current Limit,  Configure Voltage List, Configure Current List, and Configure Measurement Range
+- Added waveform mode to "Configure Triggered Current Mode.vi" and "Configure Triggered Voltage Mode.vi"
+
+REV 3.0.1, 09/05/2012, Modified Configure Waveform Characteristics VI and corrected Waveform Shape control command syntax, the correct syntax should be "SHAP" not "SHAPE"
+
+REV 3.1, 07/10/2015, Modified by: Zhifan Su, Shanghai, China.
+- Added support for new Keysight/Agilent modules: N6785A, N6786A
+- Added VIs:
+  Abort External Data Log.vi
+  Fetch External Data Log.vi
+  Initiate External Data Log.vi
+  Auto External Data Log Range.vi
+  Configure External Data Log.vi
+  Configure External Data Log Range.vi
+  Configure Measurement Resolution.vi
+  Immediate External Data Log Trigger.vi
+  Configure External Data Log Trigger Source.vi
+- Modified VIs:
+  Fetch.vi
+  Fetch Array.vi
+  Measure.vi
+  Measure Array.vi
+
+ REV 3.2 08/2019, Modified by: Jingwen Chen, Shanghai, China.
+- Added support for new Keysight/Agilent modules: N6791A, N6792A
+- Added support for new Keysight/Agilent models: N6700C, N6701C, N6702C, N6705C
+- Added Pin<4-7> parameter to following VIs:
+  Configure External Data Log Trigger Source.vi
+  Configure Histogram Trigger Source.vi
+  Configure Trigger Source.vi
+  Configure Pin.vi
+- Added the following VI:
+  Change Instrument Identity.vi
+  Get CChannel Model Number.vi
+- Modified the following VI:
+  Configure Data Log Measurement Range.vi
+  Agilent N6700 Series Data Log Voltage Sine Wave.vi
+  Agilent N6700 Series Configure Voltage.vi
+</font>
+</pre>
+</body>
+</html>

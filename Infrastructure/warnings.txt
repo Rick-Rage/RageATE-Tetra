@@ -1,0 +1,4 @@
+C:\IdtATE\Charactorization Tests\F1200\Linearity\Sequencer_10.0.0.0.vi (Sequencer_10.0.0.0.vi)
+    - The VI expected to be at "C:\IdtATE\Charactorization Tests\IdtATE\Initialize References\Open vi Reference_1.0.0.0.vi" was loaded from "C:\IdtATE\Initialize References\Open vi Reference_1.0.0.0.vi".
+    - The VI expected to be at "C:\IdtATE\Charactorization Tests\IdtATE\Initialize References\Sequence Globals.vi" was loaded from "C:\IdtATE\Initialize References\Sequence Globals.vi".
+    - The VI expected to be at "C:\IdtATE\Charactorization Tests\IdtATE\Infrastructure\Test Parameter Globals_1.0.0.vi" was loaded from "C:\IdtATE\Infrastructure\Test Parameter Globals_1.0.0.vi".

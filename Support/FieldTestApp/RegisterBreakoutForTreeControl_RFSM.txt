@@ -1,0 +1,155 @@
+; This file describes the registers in the Cyterra RF Source Module.
+; These registers (and their subfields) are described in the document
+; entitled TM-PROV-002.
+
+; The contents of this file are parsed by my cTreeViewBox class.
+; A semi-colon indicates a comment line.
+; The format of the non-indendented lines is:
+; RegName  RegAddr  RW/RO DefValue
+; The format of the indendented lines is:
+; LSBit   NumBits  Unsigned/Signed  FieldName  PopUpToolTip(optional)
+; where blanks (space characters) separate these 5 fields.
+; The PopUpToolTip includes the remainder of the line and hence can include blanks.
+; The PopUpToolTip can be made multiline by including the 2 char sequence "\n".
+; LSBit counts from 0.
+; Values can be expressed in hex if preceded by 0x or 0X.
+
+FWVER                    0  RO  16 0x0000
+STATUS                   1  RO  16 0x0001
+  0  1  Unsigned  Ready  FPGA is ready
+
+FREQ_COUNT               2  RO  16 0
+CTRL                     3  RW  16 0x0180
+  0  1  Unsigned  MANVOLTCTRL  enable freq control by VTUNE reg
+  1  1  Unsigned  MUTE         irrelevant unless ENMANMUTE bit is set
+  2  1  Unsigned  ENMANMUTE    enable manual muting via MUTE bit
+  3  1  Unsigned  ARM          arm for SOS trigger
+  4  1  Unsigned  NotUsed1
+  5  1  Unsigned  FLTRSEL      irrelevant unless ENFLTRSEL bit is set
+  6  1  Unsigned  ENFLTRSEL    activate low-pass filter
+  7  1  Unsigned  8VSupplyEnable turns on 8V supply to RF amp
+  8  1  Unsigned  5VSupplyEnable turns on 5V supply to RF amp
+  9  1  Unsigned  ShowSOSonLED  when 1 LED=SOS, when 0 LED=heartbeat
+ 10  6  Unsigned  NotUsed2
+; The LSBit (MANVOLTCTRL) of this CTRL reg must be set to 1 to enable VCO calibration.
+; The ShowSOSonLED bit first appeared in FPGA rev 16.
+
+RETRACE_TIME             4  RW  16 76
+; Units of the 150 MHz clock hence the value 76 (= 0x4C) represents 76 / 150e6 = 0.507 usec
+; We need to select an even number for this value because the Mercury AM
+; measures its ADC_INTRACHIRP_DELAY using a 75 MHz clock.
+
+TABLE_DEPTH              5  RW  16 697
+; TABLE_DEPTH specifies the # of populated entries in the VCO DAC Ramp Table.
+; These populated entries are played out" at a 50 MHz rate (assuming the
+; state machine clock freq is 150 MHz). Hence 697 entries can be played
+; out in 697 / 50e6 = 13.94 usec
+
+
+MSCANLINES               6  RO  16 0
+SOS_COUNTER              7  RO  16 0
+; Both MSCANLINES and SOS_COUNTER are triggered by the StartOfScanline
+; (SOS) trigger provided by the V3ISU. However SOS_COUNTER represents
+; the output of a counter that directly connects to the SOS trigger
+; whereas MSCANLINE counts the scanlines that were actually generated.
+; That is, if the state machine is already generating its sequence
+; of chirps and a noise pulse causes a bogus SOS trigger, only
+; SOS_COUNTER will advance.
+
+FILTER_SWITCH            8  RW  16 308
+; This delay is expressed in units of 50 MHz, not 150 MHz.  Actually
+; the numeric value indicates the entry in the VCO Table where the
+; filter switch will occur, but the VCO Table is read out at a 50 MHz rate.
+; Michael Bristol instructed me to flip this filter at a frequency
+; of 14.5 GHz which is 4.5/10 = 45 % of the way through the chirp.
+; The TABLE_DEPTH register (which is also clocked out at 50 MHz)
+; defines the length of the chirp. Therefore we want FILTER_SWITCH =
+; .45 * TABLE_DEPTH.
+
+VTUNE                    9  RW  16 0
+; This VTUNE register is used for 2 purposes.
+; When the MANVOLTCTRL bit in the CTRL reg is set the VCO DAC
+; is set statically to the value in this VTUNE register and an
+; endless cycle of time gated counter measurements constantly
+; update the contents of the FREQ_COUNT reg.
+; When not performing VCO calibration this VTUNE reg
+; controls the value of the VCO DAC prior to the chirp
+; and in between chirps (the "retrace").
+
+GATETIME                10  RW  16 38400
+; The GATETIME reg sets the time period (in units of the 150 MHz
+; state machine clock cycles) during which the FREQ_COUNT time-gated
+; counter accumulates the prescaled pulses. The prescalar divides the
+; the normal 10-20 GHz output by 8 * 8 * 4 = 256 and hence
+; the actual counted frequency varies from 10000 / 256 = 39 MHz to
+; 20000 / 256 = 78 MHz as controlled by VTUNE. The GATETIME value
+; of 38400 (0x9600) represents 38400 / 150e6 = 256 usec. During
+; a period of 256 usec a freq of 39 MHz will generate 10000
+; pulses and hence be measurable with a resolution of 1 part
+; in 10000 or 0.01 %. All higher frequencies will be measurable
+; with even better resolution.
+
+MUTE1                   11  RW  16 0x0000
+MUTE2                   12  RW  16 0x0000
+MUTE3                   13  RW  16 0x0000
+MUTE4                   14  RW  16 0x0000
+MUTE5                   15  RW  16 0x0000
+MUTE6                   16  RW  16 0x0000
+MUTE7                   17  RW  16 0x0000
+MUTE8                   18  RW  16 0x0000
+MUTE9                   19  RW  16 0x0000
+MUTE10                  20  RW  16 0x0000
+MUTE11                  21  RW  16 0x0000
+MUTE12                  22  RW  16 0x0000
+MUTE13                  23  RW  16 0x0000
+MUTE14                  24  RW  16 0x0000
+MUTE15                  25  RW  16 0x0000
+MUTE16                  26  RW  16 0x0000
+MUTE17                  27  RW  16 0x0000
+MUTE18                  28  RW  16 0x0000
+MUTE19                  29  RW  16 0x0000
+MUTE20                  30  RW  16 0x0000
+; For each of the MUTEx registers, the upper byte sets the delay
+; (expressed in 150 MHz state machine clock cycles) from the end
+; of the previous mute action to the beginning of the new mute action
+; and the lower byte sets the duration (expressed in state machine
+; clock cycles) of the new mute action.
+
+
+SWITCH0                 31  RW  16 0x0015
+SWITCH1                 32  RW  16 0x1810
+SWITCH2                 33  RW  16 0x1800
+SWITCH3                 34  RW  16 0x1802
+SWITCH4                 35  RW  16 0x180A
+SWITCH5                 36  RW  16 0x182A
+SWITCH6                 37  RW  16 0x182B
+SWITCH7                 38  RW  16 0x182F
+SWITCH8                 39  RW  16 0x183F
+SWITCH9                 40  RW  16 0x183D
+; For each of the SWITCHx registers, the upper byte sets the # of
+; chirps that will occur with this particular output mux configuration
+; and the lower byte states that particular output mux configuration.
+; However SWITCH0 is a special state used while waiting for a SOS
+; trigger and whenever the MANVOLTCTRL bit in the CTRL reg is asserted.
+; In that special state the upper byte of SWITCH0 is not used.
+; For all SWITCHx registers the LSByte is employed as follows:
+;     no AMs driven            0x15
+;     AM1 & AM2 driven         0x10
+;     AM1, AM2, & AM3 driven   0x00
+;     AM2, AM3, & AM4 driven   0x02
+;     AM3, AM4, & AM5 driven   0x0A
+;     AM4, AM5, & AM6 driven   0x2A
+;     AM5, AM6, & AM7 driven   0x2B
+;     AM6, AM7, & AM8 driven   0x2F
+;     AM7, AM8, & AM9 driven   0x3F
+;     AM8 & AM9 driven         0x3D
+
+
+SOS_DELAY               41  RW  16 2055
+; The SOS_DELAY register sets the delay (expressed in 150 MHz state machine
+; clock cycles) from the SOS trigger to the start of the first chirp.
+; Hence the value 2055 represents a delay of 2055 / 150e6 = 13.7 usec
+
+CURRENT_TEMPERATURE     42  RO  16 0x0000
+; The CURRENT_TEMPERATURE register first appeared in FWVER = 0x0019 created by Valery.
+

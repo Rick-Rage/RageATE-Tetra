@@ -1,0 +1,28 @@
+CODE,DESC,INFO
+FF,Fault - Critical System Error,The device has experienced a critical system error. This should not occur during normal operation. Please contact Zaber Support with the response from system errors if this occurs.
+FN,Fault - Peripheral Not Supported,The connected peripheral is not supported by this version of firmware.
+FZ,Fault - Peripheral Inactive,The peripheral is inactive.
+FH,Fault - Hardware Emergency Stop Driver Disabled,The device has disabled the driver in response to a hardware emergency stop signal.
+FV,Fault - Overvoltage or Undervoltage Driver Disabled,"The device has disabled the driver in response to the driver voltage being outside the normal operating range. This can occur if a stall has occurred, if the motor is backdriven, if there is damage to the driver hardware, or if there is a problem with the power supply."
+FO,Fault - Driver Disabled,The device has disabled the driver.
+FC,Fault - Current Inrush Error,The device has disabled the driver due to an excessive inrush of current from the power supply. This may occur due to a problem with the driver or motor. It may also occur when power supplies are connected to or disconnected from a controller supporting multiple power supplies or devices in a daisy-chain.
+FM,Fault - Motor Temperature Error,The device has disabled the driver due to an overheating motor.
+FD,Fault - Driver Temperature/Current Error ,The device has disabled the driver due to an overheating driver or an over-current condition.
+FQ,Fault - Encoder Error,"The encoder-measured position may be unreliable. The encoder has encountered a read error due to poor sensor alignment, vibration, dirt or other environmental conditions. Reset the encoder reference position by sending system reset followed by a home operation."
+FS,Fault - Stalled and Stopped,The axis detected a stall and has stopped; the requested movement was not completed.
+FB,Fault - Stream Bounds Error,"The device could not execute a previously sent stream movement because it failed a precondition (e.g. motion exceeds device bounds, calls nested too deeply)."
+FE,Fault - Limit Error,Either the axis could not reach the target limit sensor or the sensor is faulty.
+FT,Fault - Excessive Twist,Twist in the lockstep group exceeded the allowable tolerance setting and movement has stopped.
+WL,Warning - Unexpected Limit Trigger,A movement operation did not complete due to a triggered limit sensor. This flag is set if a limit sensor interrupts a movement operation and the No Reference Position (WR) warning flag is not present. This may be an indication that the axis has slipped or one of limit.min and limit.max is incorrect.
+WV,Warning - Voltage Out of Range,The supply voltage is outside the recommended operating range of the device. Damage to the device could occur if not remedied.
+WT,Warning - Temperature High,The internal temperature of the controller has exceeded the recommended limit for the device.
+WS,Warning - Stalled with Recovery,"The axis detected a stall, but has recovered or is recovering."
+WM,Warning - Displaced When Stationary,"While not in motion, the axis has been forced out of its position."
+WP,Warning - Invalid Calibration Type,There is calibration data saved which this axis configuration does not support.
+WR,Warning - No Reference Position,The axis does not have a reference position.
+WH,Warning - Device Not Homed,"The axis has a position reference, but has not been homed."
+NC,Note - Manual Control,The axis is busy due to manual control via the knob.
+NI,Note - Movement Interrupted,The device prematurely ended a previous motion command or displacement recovery in order to execute a newly-received movement operation (either a command or manual control). This indicates that a movement command or displacement recovery did not complete. This flag will not occur if the movement that was prematurely ended was initiated using the manual knob.
+ND,Note - Stream Discontinuity,The axis has slowed down while following a streamed motion path because it has run out of queued motions.
+NR,Note - Value Rounded,One or more values in a command exceeded their specified levels of precision and were rounded.
+NT,Note - Value Truncated,The value could not fit into a single packet and was truncated. See Line Continuation for more details.

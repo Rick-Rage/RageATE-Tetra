@@ -1,0 +1,16 @@
+PyQt5
+opencv-python
+pyserial
+numpy
+pandas
+mysql-connector-python
+DateTime
+openpyxl
+psycopg2
+pathlib
+pygame
+pdf2image
+pyvisa
+tkPDFViewer
+tk
+GitPython

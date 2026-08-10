@@ -1,0 +1,503 @@
+; The contents of this file are parsed by my cTreeViewBox class.
+; A semi-colon indicates a comment line.
+; The format of the non-indendented lines is:
+; RegName  RegAddr  RW/RO DefValue
+; The format of the indendented lines is:
+; LSBit   NumBits  Unsigned/Signed  FieldName  PopUpToolTip(optional)
+; where blanks (space characters) separate these 5 fields.
+; The PopUpToolTip includes the remainder of the line and hence can include blanks.
+; The PopUpToolTip can be made multiline by including the 2 char sequence "\n".
+; LSBit counts from 0.
+; Values can be expressed in hex if preceded by 0x or 0X.
+
+FPGA_VERSION            0  RO  16 0x0010
+
+SYS_RUN                 1  RW  16 0xC000
+  0  1  Unsigned  Reset resets all FPGA State Machines
+  1  1  Unsigned  ArmToScan enables all FPGA state machines to start upon next trigger
+  2  1  Unsigned  Cal substitutes for mechanical motion trigger
+  3  1  Unsigned  PrepDMA  initializes dest addr ARCHAIC
+  4  1  Unsigned  FakeData substitutes incrementing pattern for AtoD readings ARCHAIC
+  9  1  Unsigned  EnableDMA  enables Bus Master DMA transfers and interrupts 
+ 10  1  Unsigned  FlushDMA   flushes whatever AtoD data remains in DMA FIFO
+ 11  1  Unsigned  Reserved
+ 12  1  Unsigned  ResetI2CStateMachine  frees a stuck I2C transaction
+ 13  1  Unsigned  Reserved
+ 14  1  Unsigned  ActivateAllFpdChips turns on all FPD-Link III chips
+ 15  1  Unsigned  ActivateMastPower turns on 18V to mast
+
+SYNC_CONFIG             2  RW  16 0x0027
+  0  1  Unsigned  PositionInputPolarity high to select falling as active edge
+  1  1  Unsigned  PositionInputQualificationEnable low selects PositionInput to drive state machine,\nhigh selects internally generated MechScan
+  2  1  Unsigned  PositionInputSource low selects either CAL or free-run oscillator
+  3  1  Unsigned  PositionExternalSource low selects SlaveSyncIn,\nhigh selects mag encoder
+  4  1  Unsigned  MasterModeDriverEnable high enables the tri-state driver on MasterSyncOut
+  5  1  Unsigned  MasterModeDriverSource low selects internally generated MechScan to drive MasterSyncOut,\nhigh selects PositionInput
+  6  1  Unsigned  PositionFreeRunMux low selects CAL, high selects free-run oscillator
+  7  1  Unsigned  RunForever high prevents MECHSCAN_PCOUNT,\nfrom ever reaching MECHSCAN_COUNT
+
+POS_IN_DELAY            3  RW  16  2
+  0 16  Unsigned  PositionInputDelay # of triggers to skip\nbefore starting repeating sequence
+
+POS_IN_DIVIDE           4  RW  16  33
+  0 16  Unsigned  PositionInDivide # of triggers between sampling locations
+; In the PV1 POS_IN_DIVIDE = 26 and we generate 224 scanlines
+; In the PV2 POS_IN_DIVIDE = 36 and we generate 224 scanlines
+; In the PVW POS_IN_DIVIDE = 33 and we generate 240 scanlines
+
+MECH_SCAN_ACTIVE        5  RW  16  22504
+  0 16  Unsigned  MechanicalScanSamplePulseWidth MSPW
+; Since state_clk is 150 MHz the MECH_SCAN_ACTIVE (a.k.a. MSPW)
+; value of 22500 results in a 150 usec period on the mech_sync
+; signal. This is the signal that emits from the Master ISU
+; to trigger the Slave ISU. 150 usec is 5 % of the 3 msec
+; minimum scanline period (which happens only at max mast velocity).
+
+MECH_SCAN_COUNT         6  RW  16  240
+  0 16  Unsigned  MechanicalScanSampleCount MS
+; The PV1 and PV2 have MECH_SCAN_COUNT = 224 meaning 224
+; vertical scanlines will be collected from each mast.
+; The V3ISU increased MECH_SCAN_COUNT to 240.
+
+MECH_SCAN_PCOUNT        7  RO  16  0
+  0 16  Unsigned  ActualMechanicalScanSampleCount read-only
+
+SPATIAL_SSDELAY         8  RW  16 0x00FF
+  0 16  Unsigned  StartScanDelayLSWord SDEL LSWord
+; This is the setting that varies between the Master and Slave
+; ISUs in order to skew their emissions in time.
+
+SPATIAL_SSDELAY_EXTEND  9  RW  16 0x0000
+  0 16  Unsigned  StartScanDelayMSWord SDEL MSWord
+
+SPATIAL_CYCLES         10  RW  16 216
+  0 16  Unsigned  SpatialSampleCycles SS
+
+; Historically a "spatial cycle" (a.k.a. SS) was the vertical
+; location down the mast where a logical antenna (which is really
+; a pairing of a particular Tx and a particular Rx antenna) sampled
+; the radar reflection. Hence historically the value in the
+; SPATIAL_CYCLES reg could be used as the number of logical antennas.
+; But the Mercury AMs have 4 radio demodulators which can be
+; simultaneously active. For the operating regime described by
+; this FPGA register INI file we simultaneously activate 2 demods
+; whenever possible. We can simultaneously activate 2 demods
+; for most of the scanline except for 3 logical antennas at
+; the top of the mast and 3 logical antennas at the bottom 
+; of the mast. Because we can simultaneously activate 2 demods
+; during the rest of the time we need 216 chirps to sample
+; 426 logical antennas. Note that 216 is NOT half of 426 !!
+
+; Because this SPATIAL_CYCLES reg is used in scan_controller.v
+; and trigger_generator.v we need to set it to 216, the # of chirp
+; intervals.  But this causes a problem because the value in the
+; SPATIAL_CYCLES register has historically been interpeted as
+; being the number of "logical antennas" or "antenna pairs".
+
+; In the wideband product we have 426 pairs of Tx/Rx antennas
+; and we chirp 216 times during each scanline. AM1 holds the
+; active Tx antenna during the first 24 of these chirps, AM2 through AM7
+; hold the Tx antenna during 24 chirps each, and AM9 holds the active
+; Tx antenna during the final 24 chirps. This adds up to
+;  24 + ( 7 * 24 ) + 24 = 216 which is half of 432 NOT half of 426 !!
+
+; During the first  3 chirps AM1 samples           3 logical antennas
+; During the next  18 chirps AM1 samples 2 * 18 = 36 logical antennas
+; During the next   6 chirps AM1 samples           6 logical antennas
+;                        and AM2 samples           6 logical antennas
+; During the next  18 chirps AM2 samples 2 * 18 = 36 logical antennas
+; During the next   6 chirps AM2 samples           6 logical antennas
+;                        and AM3 samples           6 logical antennas
+; During the next  18 chirps AM3 samples 2 * 18 = 36 logical antennas
+; During the next   6 chirps AM3 samples           6 logical antennas
+;                        and AM4 samples           6 logical antennas
+; During the next  18 chirps AM4 samples 2 * 18 = 36 logical antennas
+; During the next   6 chirps AM4 samples           6 logical antennas
+;                        and AM5 samples           6 logical antennas
+; During the next  18 chirps AM5 samples 2 * 18 = 36 logical antennas
+; During the next   6 chirps AM5 samples           6 logical antennas
+;                        and AM6 samples           6 logical antennas
+; During the next  18 chirps AM6 samples 2 * 18 = 36 logical antennas
+; During the next   6 chirps AM6 samples           6 logical antennas
+;                        and AM7 samples           6 logical antennas
+; During the next  18 chirps AM7 samples 2 * 18 = 36 logical antennas
+; During the next   6 chirps AM7 samples           6 logical antennas
+;                        and AM8 samples           6 logical antennas
+; During the next  18 chirps AM8 samples 2 * 18 = 36 logical antennas
+; During the next   6 chirps AM8 samples           6 logical antennas
+;                        and AM9 samples           6 logical antennas
+; During the next  18 chirps AM9 samples 2 * 18 = 36 logical antennas
+; During the next   3 chirps AM9 samples           3 logical antennas
+;              -------------                    ---------------------
+;     totaling to 216 chirps         totaling to 426 logical antennas
+
+
+SPATIAL_PERIOD         11  RW  16 2059
+  0 16  Unsigned  SpatialPeriod SP
+; Since state_clk is 150 MHz the SPATIAL_PERIOD (a.k.a. SP)
+; value of 2059 results in a freq chirp period of 13.727 usec.
+; Note that ( 13.727 + 0.5 ) usec/chirp * 216 chirps = the
+; correct 3.1 msec scanline time (the 0.5 usec is the retrace).
+
+SPATIAL_ACTIVE_PERIOD  12  RW  16 150
+  0 16  Unsigned  SpatialSampleActivePeriod SA
+; Since state_clk is 150 MHz the SPATIAL_ACTIVE_PERIOD (a.k.a. SA)
+; value of 150 results in a chirp retrace period of 1 usec.
+; Note that this must be a small fraction of the SP period.
+
+SCAN_LINE_SAMPLE_CNT_MSW 13  RW  16 0x0001
+SCAN_LINE_SAMPLE_CNT_LSW 14  RW  16 0xAA00
+; SCAN_LINE_SAMPLE_CNT holds the number of DWORDS in a single vertical scanline.
+; The PIO_TX_ENGINE.v module needs to know this value to create its scanline_sent
+; output which connects to interrupt_controller.v
+; It is NOT CORRECT to say that A single vertical scanline consists of
+; SPATIAL_CYCLES * NUM_SIMULTANEOUS_DEMODS * CHAN_FREQ_SAMPLES = 213 * 2 * 256 = 110592 DWORDS
+; because AM1 and AM9 have fewer antenna pairs than the interior cards. The actual
+; computation is [ ( 2 * 45 ) + ( 7 * 48 ) ] * 256 = 109056 = 0x0001_AA00.
+; Note that this value is too large to fit in a single 16-bit register.
+
+SCAN_LINE_TX_CNT       15  RO  16 0x0000
+; SCAN_LINE_TX_CNT counts scanlines worth of DMA data.
+
+SCAN_INT_CONFIG        16  RW  16 0x0000
+  0  1  Unsigned  InterruptEnable
+  1  1  Unsigned  notUsed
+  2  1  Unsigned  InterruptClear
+
+SCAN_INT_SKIP          17  RW  16 0x0000
+SCAN_UPDATE_DELAY      18  RW  16 0x0001
+; The SCAN_UPDATE_DELAY reg states a delay (between the end of a scanline and when
+; an interrupt is generated) expressed in user_clk (i.e. 62.5 MHz) clock cycles.
+
+
+TRIGGER_ON_SCANLINE    19  RW  16   5
+TRIGGER_ON_ANT         20  RW  16   3
+TRIGGER_ON_FREQ        21  RW  16   8
+
+I2C_CLOCK_PRESCALE     22  RW  16  75
+  0 16 Unsigned  ClockDivisionFactor  sets ratio between FPGA clock and SCL
+; I2C_CLOCK_PRESCALE = state_clk_Freq / 5 / SCLK_freq
+; Hence for 400 kHz I2C and state_clk = 150 MHz you want
+; I2C_CLOCK_PRESCALE = 150e6 / 5 / 400e3 = 75
+
+I2C_SLAVE_DEV_ADDR     23  RW  16  0
+  0 7  Unsigned  7bitAddr 7-bit I2C slave device address
+  7 1  Unsigned  Reserved
+  8 4  Unsigned  I2cBus   selects between 10 I2C buses
+ 12 4  Unsigned  Reserved
+; Note that the 4-bit I2cBus value X where 0 <= X <= 8 selects the I2C bus that connects to AM # X+1
+; where AMs are numbered starting from 1. Furthermore the 4-bit I2CBus value 0x9 selects the I2C bus
+; that connects to the RFSM. This is documented in the Word doc entitled
+; "Accessing The Remote FPGAs".
+
+I2C_REGISTER_ADDR      24  RW  16  0
+I2C_CONTROL            25  RW  16  1
+  0 1  Unsigned  StartTransaction           initiates an I2C read or write transaction
+  1 1  Unsigned  ReadNotWrite               1 causes master to read from slave,\n0 causes a write
+  2 1  Unsigned  SixteenBitTransfer         1 requests a 2-byte transfer,\n1-byte transfers use LSByte of 16-bit reg
+  3 1  Unsigned  SixteenBitRegAddr          1 requests a 2-byte I2C register address
+  4 1  Unsigned  Reserved                   this bit is always 0
+  5 1  Unsigned  Reserved                   this bit is always 0
+  6 10 Unsigned  NumWordsToBeTransferedM1   1 less than the # of words requested for the I2C transaction
+
+I2C_STATUS             26  RO  16  1
+  0 1  Unsigned  TransactionFinished    I2C read or write transaction has completed
+  1 1  Unsigned  TransactionFailed      master got no or wrong response
+  2 1  Unsigned  ArbitrationLost        some other Master took control
+  3 1  Unsigned  BusBusy                I2C bus is in use
+  4 1  Unsigned  TIP                    transfer in progress
+  5 1  Unsigned  Reserved               this bit is always 0
+  6 10 Unsigned  NumWordsTransferedM1   1 less than the # of words most recently transfered
+
+I2C_CHECKSUM           27  RO  16  0
+
+FREE_RUN_HALF_PERIOD   28  RW  16  15000
+; The scan_controller.v module includes a free-running oscillator
+; that can provide the scanline trigger signal. The period of this
+; waveform is 2 * FREE_RUN_HALF_PERIOD * 16 / state_clk_in_Hz
+; where for the V3ISU state_clk_inHz = 150e6. Hence when
+; FREE_RUN_HALF_PERIOD = 15000 the period will be 3.2 msec.
+; At full swingarm velocity vertical scanlines occur at about a 3 msec
+; repetition rate.
+
+EXPECTED_IDLE_SENTINEL_MSW  29  RW  16  0
+EXPECTED_IDLE_SENTINEL_LSW  30  RW  16  0
+
+CLOCK_FRAMING_ERRORS   31  RO  16  0
+  0 1  Unsigned  Am1ClockFramingError  wrong LVDS clock alignment seen on AM1
+  1 1  Unsigned  Am2ClockFramingError  wrong LVDS clock alignment seen on AM2
+  2 1  Unsigned  Am3ClockFramingError  wrong LVDS clock alignment seen on AM3
+  3 1  Unsigned  Am4ClockFramingError  wrong LVDS clock alignment seen on AM4
+  4 1  Unsigned  Am5ClockFramingError  wrong LVDS clock alignment seen on AM5
+  5 1  Unsigned  Am6ClockFramingError  wrong LVDS clock alignment seen on AM6
+  6 1  Unsigned  Am7ClockFramingError  wrong LVDS clock alignment seen on AM7
+  7 1  Unsigned  Am8ClockFramingError  wrong LVDS clock alignment seen on AM8
+  8 1  Unsigned  Am9ClockFramingError  wrong LVDS clock alignment seen on AM9
+
+IDLE_SENTINEL_ERRORS   32  RO  16  0
+  0 1  Unsigned  Am1IdleSentinelError  data_gate on AM1 saw wrong idle sentinel
+  1 1  Unsigned  Am2IdleSentinelError  data_gate on AM2 saw wrong idle sentinel
+  2 1  Unsigned  Am3IdleSentinelError  data_gate on AM3 saw wrong idle sentinel
+  3 1  Unsigned  Am4IdleSentinelError  data_gate on AM4 saw wrong idle sentinel
+  4 1  Unsigned  Am5IdleSentinelError  data_gate on AM5 saw wrong idle sentinel
+  5 1  Unsigned  Am6IdleSentinelError  data_gate on AM6 saw wrong idle sentinel
+  6 1  Unsigned  Am7IdleSentinelError  data_gate on AM7 saw wrong idle sentinel
+  7 1  Unsigned  Am8IdleSentinelError  data_gate on AM8 saw wrong idle sentinel
+  8 1  Unsigned  Am9IdleSentinelError  data_gate on AM9 saw wrong idle sentinel
+
+START_SENTINEL_ERRORS  33  RO  16  0
+  0 1  Unsigned  Am1StartSentinelError  data_gate on AM1 saw wrong start sentinel
+  1 1  Unsigned  Am2StartSentinelError  data_gate on AM2 saw wrong start sentinel
+  2 1  Unsigned  Am3StartSentinelError  data_gate on AM3 saw wrong start sentinel
+  3 1  Unsigned  Am4StartSentinelError  data_gate on AM4 saw wrong start sentinel
+  4 1  Unsigned  Am5StartSentinelError  data_gate on AM5 saw wrong start sentinel
+  5 1  Unsigned  Am6StartSentinelError  data_gate on AM6 saw wrong start sentinel
+  6 1  Unsigned  Am7StartSentinelError  data_gate on AM7 saw wrong start sentinel
+  7 1  Unsigned  Am8StartSentinelError  data_gate on AM8 saw wrong start sentinel
+  8 1  Unsigned  Am9StartSentinelError  data_gate on AM9 saw wrong start sentinel
+
+END_SENTINEL_ERRORS   34  RO  16  0
+  0 1  Unsigned  Am1EndSentinelError  data_gate on AM1 saw wrong end sentinel
+  1 1  Unsigned  Am2EndSentinelError  data_gate on AM2 saw wrong end sentinel
+  2 1  Unsigned  Am3EndSentinelError  data_gate on AM3 saw wrong end sentinel
+  3 1  Unsigned  Am4EndSentinelError  data_gate on AM4 saw wrong end sentinel
+  4 1  Unsigned  Am5EndSentinelError  data_gate on AM5 saw wrong end sentinel
+  5 1  Unsigned  Am6EndSentinelError  data_gate on AM6 saw wrong end sentinel
+  6 1  Unsigned  Am7EndSentinelError  data_gate on AM7 saw wrong end sentinel
+  7 1  Unsigned  Am8EndSentinelError  data_gate on AM8 saw wrong end sentinel
+  8 1  Unsigned  Am9EndSentinelError  data_gate on AM9 saw wrong end sentinel
+
+; The following registers display the results from the SERDES channel
+; selected by the SERDES_CHANNEL_SELECT reg:
+CAPTURED_AMx_START_SENTINEL_MSW   35  RO  16  0
+CAPTURED_AMx_START_SENTINEL_LSW   36  RO  16  0
+CAPTURED_AMx_FIRST_DATA_WORD_MSW  37  RO  16  0
+CAPTURED_AMx_FIRST_DATA_WORD_LSW  38  RO  16  0
+CAPTURED_AMx_SECOND_DATA_WORD_MSW 39  RO  16  0
+CAPTURED_AMx_SECOND_DATA_WORD_LSW 40  RO  16  0
+CAPTURED_AMx_END_SENTINEL_MSW     41  RO  16  0
+CAPTURED_AMx_END_SENTINEL_LSW     42  RO  16  0
+
+PERFORM_BITSLIP               43  RW  16  0
+  0 1  Unsigned  PerformBitslipOnFpd1  slip clock and data lanes of first FPD-Link III channel
+  1 1  Unsigned  PerformBitslipOnFpd2  slip clock and data lanes of second FPD-Link III channel
+  2 1  Unsigned  PerformBitslipOnFpd3  slip clock and data lanes of third FPD-Link III channel
+  3 1  Unsigned  PerformBitslipOnFpd4  slip clock and data lanes of fourth FPD-Link III channel
+  4 1  Unsigned  PerformBitslipOnFpd5  slip clock and data lanes of fifth FPD-Link III channel
+  5 1  Unsigned  PerformBitslipOnFpd6  slip clock and data lanes of sixth FPD-Link III channel
+  6 1  Unsigned  PerformBitslipOnFpd7  slip clock and data lanes of seventh FPD-Link III channel
+  7 1  Unsigned  PerformBitslipOnFpd8  slip clock and data lanes of eighth FPD-Link III channel
+  8 1  Unsigned  PerformBitslipOnFpd9  slip clock and data lanes of ninth FPD-Link III channel
+
+FPD1_CLOCK_DELAY              44  RW  16  0x0010
+  0 5  Unsigned  ClockDelay    setting for 32-tap tapped delay line on clock
+  5 11 Unsigned  Unused
+FPD1_DATA2_DATA1_DELAY        45  RW  16  0x1010
+  0 5  Unsigned  DataLane1Delay    setting for 32-tap tapped delay line on data lane 1
+  5 3  Unsigned  Unused
+  8 5  Unsigned  DataLane2Delay    setting for 32-tap tapped delay line on data lane 2
+ 13 3  Unsigned  Unused
+FPD1_DATA4_DATA3_DELAY        46  RW  16  0x1010
+  0 5  Unsigned  DataLane3Delay    setting for 32-tap tapped delay line on data lane 3
+  5 3  Unsigned  Unused
+  8 5  Unsigned  DataLane4Delay    setting for 32-tap tapped delay line on data lane 4
+ 13 3  Unsigned  Unused
+
+FPD2_CLOCK_DELAY              47  RW  16  0x0010
+FPD2_DATA2_DATA1_DELAY        48  RW  16  0x1010
+FPD2_DATA4_DATA3_DELAY        49  RW  16  0x1010
+
+FPD3_CLOCK_DELAY              50  RW  16  0x0010
+FPD3_DATA2_DATA1_DELAY        51  RW  16  0x1010
+FPD3_DATA4_DATA3_DELAY        52  RW  16  0x1010
+
+FPD4_CLOCK_DELAY              53  RW  16  0x0010
+FPD4_DATA2_DATA1_DELAY        54  RW  16  0x1010
+FPD4_DATA4_DATA3_DELAY        55  RW  16  0x1010
+
+FPD5_CLOCK_DELAY              56  RW  16  0x0010
+FPD5_DATA2_DATA1_DELAY        57  RW  16  0x1010
+FPD5_DATA4_DATA3_DELAY        58  RW  16  0x1010
+
+FPD6_CLOCK_DELAY              59  RW  16  0x0010
+FPD6_DATA2_DATA1_DELAY        60  RW  16  0x1010
+FPD6_DATA4_DATA3_DELAY        61  RW  16  0x1010
+
+FPD7_CLOCK_DELAY              62  RW  16  0x0010
+FPD7_DATA2_DATA1_DELAY        63  RW  16  0x1010
+FPD7_DATA4_DATA3_DELAY        64  RW  16  0x1010
+
+FPD8_CLOCK_DELAY              65  RW  16  0x0010
+FPD8_DATA2_DATA1_DELAY        66  RW  16  0x1010
+FPD8_DATA4_DATA3_DELAY        67  RW  16  0x1010
+
+FPD9_CLOCK_DELAY              68  RW  16  0x0010
+FPD9_DATA2_DATA1_DELAY        69  RW  16  0x1010
+FPD9_DATA4_DATA3_DELAY        70  RW  16  0x1010
+
+CURRENT_FPD1_WORD_MSW         71  RO  16  0
+CURRENT_FPD1_WORD_LSW         72  RO  16  0
+
+CURRENT_FPD2_WORD_MSW         73  RO  16  0
+CURRENT_FPD2_WORD_LSW         74  RO  16  0
+
+CURRENT_FPD3_WORD_MSW         75  RO  16  0
+CURRENT_FPD3_WORD_LSW         76  RO  16  0
+
+CURRENT_FPD4_WORD_MSW         77  RO  16  0
+CURRENT_FPD4_WORD_LSW         78  RO  16  0
+
+CURRENT_FPD5_WORD_MSW         79  RO  16  0
+CURRENT_FPD5_WORD_LSW         80  RO  16  0
+
+CURRENT_FPD6_WORD_MSW         81  RO  16  0
+CURRENT_FPD6_WORD_LSW         82  RO  16  0
+
+CURRENT_FPD7_WORD_MSW         83  RO  16  0
+CURRENT_FPD7_WORD_LSW         84  RO  16  0
+
+CURRENT_FPD8_WORD_MSW         85  RO  16  0
+CURRENT_FPD8_WORD_LSW         86  RO  16  0
+
+CURRENT_FPD9_WORD_MSW         87  RO  16  0
+CURRENT_FPD9_WORD_LSW         88  RO  16  0
+
+SERDES_CHANNEL_SELECT         89  RW  16  0
+; The SERDES_CHANNEL_SELECT register determines which AM's
+; status is displayed on the following read-only registers:
+;    CAPTURED_AMx_START_SENTINEL_MSW
+;    CAPTURED_AMx_START_SENTINEL_LSW
+;    CAPTURED_AMx_FIRST_DATA_WORD_MSW
+;    CAPTURED_AMx_FIRST_DATA_WORD_LSW
+;    CAPTURED_AMx_SECOND_DATA_WORD_MSW
+;    CAPTURED_AMx_SECOND_DATA_WORD_LSW
+;    CAPTURED_AMx_END_SENTINEL_MSW
+;    CAPTURED_AMx_END_SENTINEL_LSW
+;    COUNT_OF_AMx_IDLE_ERRORS
+;    AMx_FIFO_HIGH_WATER_LEVEL
+;    NUM_AMx_WORDS_AVAILABLE
+;    CURRENT_FPDx_RECOVERED_CLK
+
+SERDES_PLL_STATUS             90  RO  16  0x01FF
+  0 1  Unsigned  Am1SerdesPllStatus  1 if SERDES PLL is locked to AM1
+  1 1  Unsigned  Am2SerdesPllStatus  1 if SERDES PLL is locked to AM2
+  2 1  Unsigned  Am3SerdesPllStatus  1 if SERDES PLL is locked to AM3
+  3 1  Unsigned  Am4SerdesPllStatus  1 if SERDES PLL is locked to AM4
+  4 1  Unsigned  Am5SerdesPllStatus  1 if SERDES PLL is locked to AM5
+  5 1  Unsigned  Am6SerdesPllStatus  1 if SERDES PLL is locked to AM6
+  6 1  Unsigned  Am7SerdesPllStatus  1 if SERDES PLL is locked to AM7
+  7 1  Unsigned  Am8SerdesPllStatus  1 if SERDES PLL is locked to AM8
+  8 1  Unsigned  Am9SerdesPllStatus  1 if SERDES PLL is locked to AM9
+
+; The following registers display the results from the SERDES channel
+; selected by the SERDES_CHANNEL_SELECT reg:
+COUNT_OF_AMx_IDLE_ERRORS      91  RO  16  0
+AMx_FIFO_HIGH_WATER_LEVEL     92  RO  16  0
+
+DMA_FIFO_HIGH_WATER_LEVEL     93  RO  16  0
+
+AM1_NUM_WORDS_TO_RECEIVE      94  RW  16  0
+AM2_NUM_WORDS_TO_RECEIVE      95  RW  16  0
+AM3_NUM_WORDS_TO_RECEIVE      96  RW  16  0
+AM4_NUM_WORDS_TO_RECEIVE      97  RW  16  0
+AM5_NUM_WORDS_TO_RECEIVE      98  RW  16  0
+AM6_NUM_WORDS_TO_RECEIVE      99  RW  16  0
+AM7_NUM_WORDS_TO_RECEIVE     100  RW  16  0
+AM8_NUM_WORDS_TO_RECEIVE     101  RW  16  0
+AM9_NUM_WORDS_TO_RECEIVE     102  RW  16  0
+; These 9 AMx_NUM_WORDS_TO_RECEIVE registers allow the 9 data_gate.v
+; instances to know when to expect the END_OF_DATA sentinel.
+; In the Mercury AM design each AM sends out only 1 pair of
+; START and END sentinels per scanline. However in my AM standin
+; design each AM sends out a pair of START and END sentinels
+; for each chirp.
+
+NUM_WORDS_RECEIVED_MSW       103  RO  16  0
+NUM_WORDS_RECEIVED_LSW       104  RO  16  0
+; The NUM_WORDS_RECEIVED registers count DWORDs arrived from
+; AMs as they pass through the DMA Transfer state machine
+; on their way to the DMA FIFO. This is a "per scan" rather than
+; "per scanline" quantity.
+
+; The following register displays the results from the AM FIFO
+; selected by the SERDES_CHANNEL_SELECT reg:
+NUM_AMx_WORDS_AVAILABLE      105  RO  16  0
+
+CURRENT_DMA_TABLE_INDEX      106  RO  16  0
+CURRENT_DMA_TABLE_ENTRY      107  RO  16  0
+
+START_OF_DATA_SENTINEL_MSW   108  RW  16  0x0055
+START_OF_DATA_SENTINEL_LSW   109  RW  16  0x5555
+END_OF_DATA_SENTINEL_MSW     110  RW  16  0x00AA
+END_OF_DATA_SENTINEL_LSW     111  RW  16  0xAAAA
+
+NUM_FREQS                    112  RW  16  256
+FREQ_PERIOD                  113  RW  16  8
+INITIAL_FREQ_DELAY           114  RW  16  24
+INITIAL_SPATIAL_DELAY        115  RW  16  200
+
+CURRENT_FPDx_RECOVERED_CLK   116  RO  16  0x0063
+; If BITSLIP has been performed (and succeeded) then the SERDES
+; that demodulates the clock signal provided by the FPD-Link III chips
+; (i.e. TXCLKOUT+/-) should observe the "data" value of 7'b1100011 = 0x63.
+; This value reflects the 4/7 duty cycle of the clock waveform.
+
+MIN_INTRASCANLINE_TIME       117  RO  16  0
+; The MIN_INTRASCANLINE_TIME register measures the time from SOS pulse to SOS pulse
+; in units of 2^12 * fpga_state_clk_period = 4096 / 150e6 = 27.3 usec assuming
+; the fpga_state_clk_freq = 150 Mhz. Hence if the MIN_INTRASCANLINE_TIME register
+; shows a value of 548 then at max swingarm velocity the scanlines were occurring
+; 548 * 4092 / 150e6 = 14.96 msec apart.
+; Note that this is NOT a measurement of of the repetition rate of the
+; magnetic sensor pulses. Rather it is a measurement of that rate / POS_IN_DIVIDE.
+; When you ask the Engineering Station's NSI Positioner to generate 240 trigger_out
+; pulses during a 110 deg rotation with a max velocity of 30 deg/sec then at max velocity
+; these NSI trigger_out pulses will be occurring every 110 / (240-1) / 30 = 15.3 msec.
+; When using the Engineering Station we set POS_IN_DIVIDE = 1.
+
+CURRENT_TEMPERATURE         118  RO  16  0
+
+
+;   **********************   Start of 32-bit FPGA Registers  **********************
+
+
+; In the V2ISU the original FPGA registers (roughly those employed in the original FCCISU)
+; are addressed by index but the new 32-bit registers are addressed by offset.
+
+DMA_BUFFER_ADDR_LSW         4096  R0  32 0
+; This reg was called the PCIE_HOST_BASE reg in the V2ISU.
+DMA_BUFFER_ADDR_MSW         4100  R0  32 0
+; Allows the DMA Destination buffer to live at a 64-bit address.
+
+DMA_BUFFER_LENGTH           4104  RO  32 0
+; Length in DWORDS not bytes !
+
+; The DMA_BUFFER_ADDR_LSW/MSW registers and the DMA_BUFFER_LENGTH register
+; are actually all read-write registers but I label them as read-only because
+; I don't want my FieldTest.exe exerciser to ever change them: only the Linux
+; DRVguardian.c/.h device driver should ever write to these registers
+; (after it has allocated the DMA destination buffer).
+
+DMA_NUM_DWORDS_SENT         4108  RO  32 0
+; Cumulative # of DWORDS DMA'ed back to uP since the start of the scan
+; (not "since the start of the scanline").
+
+PCIE_DMA_FIFO1_STATUS       4112  RO  32 0
+  0 12  Unsigned  CurrentDmaFifo1WrDWordCnt  # of DWORDs written into DMA FIFO #1
+ 12  4  Unsigned  Reserved
+ 16 12  Unsigned  CurrentDmaFifo1RdDWordCnt  # of DWORDs now available for reading from DMA FIFO #1
+ 28  4  Unsigned  Reserved
+
+PCIE_DMA_FIFO2_STATUS       4116  RO  32 0
+  0 12  Unsigned  CurrentDmaFifo2WrDWordCnt  # of DWORDs written into DMA FIFO #2
+ 12  4  Unsigned  Reserved
+ 16 12  Unsigned  CurrentDmaFifo2RdDWordCnt  # of DWORDs now available for reading from DMA FIFO #2
+ 28  4  Unsigned  Reserved
+
+PCIE_TRN_STATUS             4120  RO  32 0
+  0  1  Unsigned  latched_err_drop   indicates an PCIe bus error
+  1 28  Unsigned  reserved
+ 29  3  Unsigned  MPS  0 means max packet size = 128 bytes, 1 indicates 256 bytes
+
+SCRATCH_REG                 4124  RW  32 0xaabbccdd
+PCIE_DMA_TEST_CTRL          4128  RW  32 0

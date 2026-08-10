@@ -1,0 +1,80 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+  <title>Instrument Driver Readme</title>
+</head>
+<body>
+<h2>Agilent MXA Series Instrument Driver Readme</h2>
+<para>To rate this instrument driver, go to the driver download page on the <a href="http://www.ni.com/idnet">Instrument Driver Network</a>.</para>
+<h4>1. Overview</h4>
+<para>Instrument Driver Technology: LabVIEW Plug and Play (project-style)
+<br>Manufacturer: Agilent-Keysight Technology
+<br>Supported Language(s): LabVIEW
+<br>Supported Model(s): N9020A, N9010A, N9030A, N9000A, M9290A
+<br>Model(s) Tested: N9020A, M9290A
+<br>Interface(s): GPIB, Ethernet, USB
+<br>Firmware Revision(s) Tested: A.01.14(N9020A), A.14.75(M9290A)
+<br>
+<br>Certified: Yes
+<br>NI Supported: Yes
+<br>Source Code Available: Yes
+<br>
+<br>Driver Revision: 1.3.1
+<br>Original Release Date: 11/06/2007
+<br>Current Revision Date: 10/2015</para>
+
+<h4>2. Required Software</h4>
+<para>Some software components need to be installed before using this instrument driver. The minimum versions of these components are listed below, and can be downloaded from the Download Site.
+<br><br>VISA 5.0 or later
+<br><br>Refer to the <i>LabVIEW Help</i> for more information about software requirements. You access the <i>LabVIEW Help</i> by selecting <strong>Help&raquo;Search the LabVIEW Help</strong>.</para>
+
+<h4>3. Known Issues</h4><para>
+
+
+To report issues or provide feedback about this instrument driver,  <a href="http://www.ni.com/en-us/support.html">please contact technical support</a>.</para>
+
+
+<br>a) When fetching measurement data in Power Stat CCDF, sometimes the MXA N9020A will have no response. 
+<br>b) There is no Analog Demod Tune & Listen button on MXA front panel when in Swept SA mode although there should be one according to the MXA manual.
+<br>c) There is no Data Source button on MXA front panel (under Input/Output) although there should be one according to the MXA manual.
+<br>d) SCPI Node Express VI is only supported in LabVIEW 2015 or later<para></para>
+
+<h4>4. Revision History</h4><para>The latest version of this and other LabVIEW and LabWindows/CVI instrument drivers can be downloaded at the <a href="http://www.ni.com/idnet">Instrument Driver Network</a>.<br>
+<br>REV 1.0, 11/06/2007<br>Modified by: Liping Zhao, Shanghai, China.<br><para>Original release.<br>
+<br>REV 1.1, 01/10/2008<br>Modified by: Liping Zhao, Shanghai, China.<br>Added support for EXA model 9010A<br>
+<br>REV 1.1.1, 08/12/2008<br>Modified by: Logan Lamb, Austin, TX.<br>Removed a VISA Clear in Wait for Acquisition Complete VI due to compatibility issues with newer firmware.<br>
+<br>REV 1.1.2, 12/07/2009<br>Modified by: Liping Zhao, Shanghai, China.<br>Modified the Extended User Data.ctl<br>
+<br>REV 1.2, 06/08/2010<br>Modified by: Liping Zhao, Shanghai, China.<br>
+Added support for PXA and CXA<br>
+Added the following VIs:<br>
+Grab Screen Image.vi<br>
+Enable Noise Floor Extensions.vi<br>
+Configure Measurement (TOI - Zero Span).vi<br>
+Configure Measurement (TOI - Tune Frequency).vi<br>
+Configure Measurement (Harmonic).vi<br>
+Configure Range Table (Harmonic).vi<br>
+Fetch Measurement (Harmonic).vi<br>
+Read Measurement (Harmonic).vi<br><br>
+Modified the following VIs:<br>
+Configure Sweep Coupling.vi<br>
+Configure Sweep Coupling Characteristics.vi<br>
+Configure Trigger (Periodic Timer).vi<br>
+Configure Trigger (Normal).vi<br>
+Configure Amplitude Characteristics.vi<br>
+Configure Measurement Averaging.vi<br>
+Configure Acquisition.vi<br>
+Configure Level (Normal).vi<br>
+Configure Measurement Type.vi<br>
+Fetch Measurement (Others).vi<br>
+<br>REV 1.2.1, 01/15/2014<br>Modified by: NI, Austin, TX.<br>
+Modified Configure Level (Normal) to utilize User Data for the :POW:ATT:STEP command.  <br>
+Agilent MXA Series Acquire Measurement the Mechanical Attenuation control was re-created to include new documentation. <br>
+Agilent MXA Series Acquire Trace - the Manual Detector Type control was re-created to reflect text ring control options in subVI. <br>
+Agilent MXA Series Configure and Query Marker - the Manual Detector Type control was re-created to reflect text ring control options in subVI. <br>
+<br>REV 1.3, 12/05/2014<br>Modified by: Zhen Wang, Shanghai, China.<br>Add new model M9290A.<br>
+<br>REV 1.3.1, 10/2015<br>Modified by: Jun Zhang, Shanghai, China.<br>
+Added SCPI Node express VI - supported by all models.<br>
+SCPI Node - allows a user to send single or multiple SCPI commands to the instrument in combination with driver API VIs.  First, configure an instrument using high-level API VIs, and then, if needed, use the tool to change specific setting(s) on the instrument. Select the Express VI from the palette (third row) and use it by selecting the following palettes Instrument I/O -> Instr Drivers -> Agilent MXA -> ExpressDriver
+<br>
+</body>
+</html>

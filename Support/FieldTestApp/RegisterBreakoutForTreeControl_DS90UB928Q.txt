@@ -1,0 +1,397 @@
+; This file describes the registers in the T.I. DS90UB928Q deserializer.
+; These registers (and their subfields) are described in Section 8.6 of the datasheet.
+
+; The contents of this file are parsed by my cTreeViewBox class.
+; A semi-colon indicates a comment line.
+; The format of the non-indendented lines is:
+; RegName  RegAddr  RW/RO DefValue
+; The format of the indendented lines is:
+; LSBit   NumBits  Unsigned/Signed  FieldName  PopUpToolTip(optional)
+; where blanks (space characters) separate these 5 fields.
+; The PopUpToolTip includes the remainder of the line and hence can include blanks.
+; The PopUpToolTip can be made multiline by including the 2 char sequence "\n".
+; LSBit counts from 0.
+; Values can be expressed in hex if preceded by 0x or 0X.
+
+I2cDeviceId              0  RO  8 0x58
+  1  7  Unsigned  DeviceID     7-bit address of deserializer
+  0  1  Unsigned  ID_Setting   if 1 DeviceID is from reg, if 0 from IDx pin
+; This reg is actually writable but I mark it read-only so that the I2C device ID
+; set by the IDX pin is not disturbed.
+
+Reset                    1  RW  8 0x04
+;  7  1  Unsigned  RemoteAutoPowerDown  power down when no forward channel link is detected
+; The 926 has a RemoteAutoPowerDown bit in this register which the 928 lacks.
+  3  5  Unsigned  Reserved             these bits are reserved
+  2  1  Unsigned  BackChannelEnable    enables the back channel
+  1  1  Unsigned  DigitalReset1        resets the entire digital block including the registers
+  0  1  Unsigned  DigitalReset0        resets the entire digital block except for the registers
+
+Configuration0           2  RW  8 0x00
+  7  1  Unsigned  OutputEnable                 enable LVCMOS outputs
+  6  1  Unsigned  OenAndOssSelOverride         override OEN and OSS_SEL pin
+  5  1  Unsigned  OscClockEnable               enable OSC clock being output onto PCLK when LOCK is low
+  4  1  Unsigned  OutputSleepStateSelect       enable OSS_SEL to control output state when LOCK is low
+  3  1  Unsigned  BackwardCompatibilitySelect  if 1 backward compatibility mode is set by register, if 0 by MODE_SEL pin
+  2  1  Unsigned  BackwardCompatibilityMode    be backward compatible with DS90UR907Q
+  1  1  Unsigned  LfModeOverride               if 1 frequency range is set by register, if 0 by LFMODE pin
+  0  1  Unsigned  LfMode                       if 1 PCLK range 5-15 MHz, if 0 15-85 MHz
+; We don't need any of the "LVCMOS outputs" (these are mostly the GPIO and I2S pins).
+
+; The LFMode must be selected when PCLK < 15 MHz. LFMode can be
+; selected either via the Configuration1 register or via the
+; MODE_SEL pin.  The advantage of using MODE_SEL is that
+; "When LFMODE is changed a PDB reset is required".
+
+Configuration1           3  RW  8 0xF8
+  7  1  Unsigned  Reserved               this bit is reserved
+  6  1  Unsigned  CrcGeneratorEnable     enable back channel CRC generator
+  5  1  Unsigned  Failsafe               determines pull direction for undriven inputs
+  4  1  Unsigned  FilterEnable           enable filter that rejects HS, VS, or DE pulses narrower than 2 PCLKs
+  3  1  Unsigned  I2cPassThruMode        enable I2C pass-through mode
+  2  1  Unsigned  AutoACK                enable auto acknowledge
+  1  1  Unsigned  DeGateRGB              gate RGB data with DE signal
+  0  1  Unsigned  Reserved               this bit is reserved
+; The 928 chip's power-on default for this reg is 0xF0 but we want to enable I2C pass-through.
+
+
+BCCWatchdogControl       4  RW  8 0xFE
+  1  7  Unsigned  WatchdogTimerValue     bidi control channel watchdog timer timeout in units of 2 msec
+  0  1  Unsigned  WatchdogTimerControl   disable bidi control channel watchdog timer
+
+I2cControl1              5  RW  8 0x1E
+  7  1  Unsigned  I2cPassAll         if 1 enable pass-through of all I2C transactions
+  4  3  Unsigned  SDA_HoldTime       SDA hold time in units of 50 nsec
+  0  4  Unsigned  I2cFilterDepth     glitch filter width in units of 5 nsec
+
+I2cControl2              6  RW  8 0x00
+  7  1  Unsigned  ForwardChannelSequenceError  indicates a sequence error has been detected in forward channel
+  6  1  Unsigned  ClearSequenceError           clears the sequence error detect bit
+  5  1  Unsigned  Reserved                     this bit is reserved
+  3  2  Unsigned  SDA_OutputDelay              if 00 250 nsec, if 01 300 nsec, if 10 350 nsec, if 11 400 nsec
+  2  1  Unsigned  LocalWriteDisable            disable remote writes to local device registers
+  1  1  Unsigned  I2cBusTimerSpeed             if 1 I2C bus watchdog timer expires after 50 ms, if 0 after 1 sec
+  0  1  Unsigned  I2cBusTimerEDisable          disable the I2C bus watchdog timer that attempts to clear a hung bus
+
+RemoteDeviceID           7  RO  8 0x18
+  1  7  Unsigned  SerializerDeviceID     I2C address of the remote serializer
+  0  1  Unsigned  SerDeviceIdFrozen      prevents autoloading of I2C address of remote serializer
+; This reg is actually writable but I mark it read-only so that the serializer I2C address received
+; by the 928 deserializer through the communication link is not disturbed.
+; The 928 chip's power-up default for this reg is 0x00. However this register
+; gets loaded automatically based upon the 2-way communication between the 925 serializer
+; and the 928 deserializer.
+
+; The 928 datasheet uses the name "RemoteID" for this register.
+; The 926 datasheet (and TI's AnalogLaunchPAD app) says this reg is named "RemoteDeviceID".
+
+SlaveID0                 8  RW  8 0x00
+  1  7  Unsigned  SlaveDevice0ID         I2C address of the remote slave device 0 attached to the remote serializer
+  0  1  Unsigned  Reserved               this bit is reserved
+
+SlaveID1                 9  RW  8 0x00
+  1  7  Unsigned  SlaveDevice1ID         I2C address of the remote slave device 1 attached to the remote serializer
+  0  1  Unsigned  Reserved               this bit is reserved
+
+SlaveID2                10  RW  8 0x00
+  1  7  Unsigned  SlaveDevice2ID         I2C address of the remote slave device 2 attached to the remote serializer
+  0  1  Unsigned  Reserved               this bit is reserved
+
+SlaveID3                11  RW  8 0x00
+  1  7  Unsigned  SlaveDevice3ID         I2C address of the remote slave device 3 attached to the remote serializer
+  0  1  Unsigned  Reserved               this bit is reserved
+
+SlaveID4                12  RW  8 0x00
+  1  7  Unsigned  SlaveDevice4ID         I2C address of the remote slave device 4 attached to the remote serializer
+  0  1  Unsigned  Reserved               this bit is reserved
+
+SlaveID5                13  RW  8 0x00
+  1  7  Unsigned  SlaveDevice5ID         I2C address of the remote slave device 5 attached to the remote serializer
+  0  1  Unsigned  Reserved               this bit is reserved
+
+SlaveID6                14  RW  8 0x00
+  1  7  Unsigned  SlaveDevice6ID         I2C address of the remote slave device 6 attached to the remote serializer
+  0  1  Unsigned  Reserved               this bit is reserved
+
+SlaveID7                15  RW  8 0x00
+  1  7  Unsigned  SlaveDevice7ID         I2C address of the remote slave device 7 attached to the remote serializer
+  0  1  Unsigned  Reserved               this bit is reserved
+
+SlaveAlias0             16  RW  8 0x00
+  1  7  Unsigned  SlaveDevice0Alias      I2C address that will be remapped to the remote slave device 0
+  0  1  Unsigned  Reserved               this bit is reserved
+
+SlaveAlias1             17  RW  8 0x00
+  1  7  Unsigned  SlaveDevice1Alias      I2C address that will be remapped to the remote slave device 1
+  0  1  Unsigned  Reserved               this bit is reserved
+
+SlaveAlias2             18  RW  8 0x00
+  1  7  Unsigned  SlaveDevice2Alias      I2C address that will be remapped to the remote slave device 2
+  0  1  Unsigned  Reserved               this bit is reserved
+
+SlaveAlias3             19  RW  8 0x00
+  1  7  Unsigned  SlaveDevice3Alias      I2C address that will be remapped to the remote slave device 3
+  0  1  Unsigned  Reserved               this bit is reserved
+
+SlaveAlias4             20  RW  8 0x00
+  1  7  Unsigned  SlaveDevice4Alias      I2C address that will be remapped to the remote slave device 4
+  0  1  Unsigned  Reserved               this bit is reserved
+
+SlaveAlias5             21  RW  8 0x00
+  1  7  Unsigned  SlaveDevice5Alias      I2C address that will be remapped to the remote slave device 5
+  0  1  Unsigned  Reserved               this bit is reserved
+
+SlaveAlias6             22  RW  8 0x00
+  1  7  Unsigned  SlaveDevice6Alias      I2C address that will be remapped to the remote slave device 6
+  0  1  Unsigned  Reserved               this bit is reserved
+
+SlaveAlias7             23  RW  8 0x00
+  1  7  Unsigned  SlaveDevice7Alias      I2C address that will be remapped to the remote slave device 7
+  0  1  Unsigned  Reserved               this bit is reserved
+
+Mailbox0                24  RW  8 0x00
+  0  8  Unsigned  Temporary         this register is available as a scratch pad
+; The 926 deserializer does not have this Mailbox0 register.
+
+Mailbox1                25  RW  8 0x01
+  0  8  Unsigned  Temporary         this register is available as a scratch pad
+; The 926 deserializer does not have this Mailbox1 register.
+; The datasheet claims the default value for the Mailbox1 reg is 0x00 but I observe it to be 0x01.
+
+FrequencyCounter        27  RW  8 0x00
+  0  8  Unsigned  FreqCount         rough estimate of the pixel clock period
+; The 926 deserializer does not have this FrequencyCounter register.
+
+GeneralStatus           28  RO  8 0x03
+  4  4  Unsigned  Reserved          these bits are reserved
+  3  1  Unsigned  I2sLocked         I2S PLL controller locked to input I2S clock
+  2  1  Unsigned  CRCerror          1 after CRC errors have been detected
+  1  1  Unsigned  Reserved          this bit is reserved
+  0  1  Unsigned  LockStatus        deserializer locked to recovered clock
+; The datasheet claims the default value for the GeneralStatus reg is 0x00 but I observe the Reserved bit at 0x02 being set.
+
+GPIO_0Config            29  RW  8 0x20
+  4  4  Unsigned  Revision           production revision
+  3  1  Unsigned  Gpio0LocalValue    value for GPIO_0 output when remote GPIO control is disabled
+  2  1  Unsigned  Gpio0RemoteEnable  enable GPIO_0 control from remote serializer
+  1  1  Unsigned  Gpio0Direction     if 1 GPIO_0 is an input, if 0 an output
+  0  1  Unsigned  Gpio0Enable        enable GPIO_0 operation
+
+GPIO_1and2Config        30  RW  8 0x00
+  7  1  Unsigned  Gpio2LocalValue    value for GPIO_2 output when remote GPIO control is disabled
+  6  1  Unsigned  Gpio2RemoteEnable  enable GPIO_2 control from remote serializer
+  5  1  Unsigned  Gpio2Direction     if 1 GPIO_2 is an input, if 0 an output
+  4  1  Unsigned  Gpio2Enable        enable GPIO_2 operation
+  3  1  Unsigned  Gpio1LocalValue    value for GPIO_1 output when remote GPIO control is disabled
+  2  1  Unsigned  Gpio1RemoteEnable  enable GPIO_1 control from remote serializer
+  1  1  Unsigned  Gpio1Direction     if 1 GPIO_1 is an input, if 0 an output
+  0  1  Unsigned  Gpio1Enable        enable GPIO_1 operation
+
+GPIO_3Config            31  RW  8 0x00
+  4  4  Unsigned  Reserved           these bits are reserved
+  3  1  Unsigned  Gpio3LocalValue    value for GPIO_3 output when remote GPIO control is disabled
+  2  1  Unsigned  Gpio3RemoteEnable  enable GPIO_3 control from remote serializer
+  1  1  Unsigned  Gpio3Direction     if 1 GPIO_3 is an input, if 0 an output
+  0  1  Unsigned  Gpio3Enable        enable GPIO_3 operation
+
+GPIO_5and6Config        32  RW  8 0x00
+  7  1  Unsigned  Gpio6LocalValue    value for GPIO_6 output when remote GPIO control is disabled
+  6  1  Unsigned  Reserved           this bit is reserved
+  5  1  Unsigned  Gpio6Direction     if 1 GPIO_6 is an input, if 0 an output
+  4  1  Unsigned  Gpio6Enable        enable GPIO_6 operation
+  3  1  Unsigned  Gpio5LocalValue    value for GPIO_5 output when remote GPIO control is disabled
+  2  1  Unsigned  Reserved           this bit is reserved
+  1  1  Unsigned  Gpio5Direction     if 1 GPIO_5 is an input, if 0 an output
+  0  1  Unsigned  Gpio5Enable        enable GPIO_5 operation
+
+GPIO_7and8Config        33  RW  8 0x00
+  7  1  Unsigned  Gpio8LocalValue    value for GPIO_8 output when remote GPIO control is disabled
+  6  1  Unsigned  Reserved           this bit is reserved
+  5  1  Unsigned  Gpio8Direction     if 1 GPIO_8 is an input, if 0 an output
+  4  1  Unsigned  Gpio8Enable        enable GPIO_8 operation
+  3  1  Unsigned  Gpio7LocalValue    value for GPIO_7 output when remote GPIO control is disabled
+  2  1  Unsigned  Reserved           this bit is reserved
+  1  1  Unsigned  Gpio7Direction     if 1 GPIO_7 is an input, if 0 an output
+  0  1  Unsigned  Gpio7Enable        enable GPIO_7 operation
+
+DatapathControl         34  RW  8 0x00
+  7  1  Unsigned  OverrideFcConfig    disable loading of this register from the forward channel
+  6  1  Unsigned  Reserved            this bit is reserved
+  5  1  Unsigned  DE_Polarity         if 1 DE is active low, if 0 DE is active high
+  4  1  Unsigned  I2sGen              if 1 don't output packetized audio data on RGB video output pins
+  3  1  Unsigned  I2sChannelBEnableOverride   if 1 set I2S channel B enable from register, if 0 based on MODE_SEL pin
+  2  1  Unsigned  18bitVideoSelect    select 18-bit video mode
+  1  1  Unsigned  I2sTransportSelect  enable I2S data forward channel frame transport
+  0  1  Unsigned  I2sChannelBEnable   enable I2S channel B on B1 output pin
+
+RxModeStatus            35  RO  8 0x10
+  4  4  Unsigned  Reserved            these bits are reserved  
+  3  1  Unsigned  LowFrequencyMode    low frequency mode status
+  2  1  Unsigned  RepeaterMode        repeater mode status
+  1  1  Unsigned  BackwardCompatMode  backward compatibility mode status
+  0  1  Unsigned  I2sChannelBMode     I2S channel B status
+; The 926 has a RxRgbChecksum bit and a ModeSel bit in this register which the 928 lacks.
+
+BistControl             36  RW  8 0x08
+  4  4  Unsigned  Reserved           these bits are reserved
+  3  1  Unsigned  BistPinConfig      if 1 BIST configured through pin, if 0 through register
+  1  2  Unsigned  BistClockSource    if 00 ext pixel clk, if 01 33 MHz int osc, (10 reserved), if 11 25 MHz int osc
+  0  1  Unsigned  BistEnabled        BIST enabled
+
+BistErrors              37  RO  8 0x00
+  0  8  Unsigned  NumBistErrors      number of BIST errors
+
+SclHighTime             38  RW  8 0x83
+  0  8  Unsigned  SCL_HighTime   SCL high time in units of 50 nsec
+
+SclLowTime              39  RW  8 0x84
+  0  8  Unsigned  SCL_LowTime    SCL low time in units of 50 nsec
+
+; Analog LaunchPAD requests an SclHighTime of 0x14 and an SclLowTime of 0x26
+
+DatapathControl2        40  RW  8 0x00
+  7  1  Unsigned  BlockI2sAutoConfig  1 disables forward channel loading of this reg
+  4  3  Unsigned  Reserved            these bits are reserved
+  3  1  Unsigned  AuxI2sEnable        1 enables aux I2S channel on GPIO0 and 1
+  2  1  Unsigned  I2sDisable          1 disables I2S outputs
+  1  1  Unsigned  Reserved            this bit is reserved
+  0  1  Unsigned  I2sSurround         1 enables 5.1 or 7.1 channel audio
+; The 926 lacks this DataPathControl2 register.
+
+FrcControl              41  RW  8 0x00
+  7  1  Unsigned   TimingModeSelect   if 1 Sync Mode, if 0 DE only mode
+  6  1  Unsigned   HsPolarity         if 1 HS is active low, if 0 active high
+  5  1  Unsigned   VsPolarity         if 1 VS is active low, if 0 active high
+  4  1  Unsigned   DePolarity         if 1 DE is active low, if 0 active high
+  3  1  Unsigned   Frc2Enable         enable FRC 2  
+  2  1  Unsigned   Frc1Enable         enable FRC 1
+  1  1  Unsigned   HiFrc2Disable      disable Hi-FRC 2
+  0  1  Unsigned   HiFrc1Disable      disable Hi-FRC 1
+; WARNING: the 926 datasheet shows the HS and VS bits being reversed.
+
+WhiteBalanceControl     42  RW  8 0x00
+  6  2  Unsigned  PageSetting          if 00 config regs, if 01 red LUT, if 10 green LUT, if 11 blue LUT
+  5  1  Unsigned  WhiteBalanceEnable   enable white balance
+  4  1  Unsigned  LutReloadEnable      enable LUT reload
+  0  4  Unsigned  Reserved             these bits are reserved
+
+I2sControl              43  RW  8 0x00
+  7  1  Unsigned  I2sPllOverride       if 1 I2S PLL override is enabled
+  6  1  Unsigned  I2sPllEnable         if 1 I2S PLL is off hence no jitter cleaning
+  1  5  Unsigned  Reserved             these bits are reserved
+  0  1  Unsigned  I2sClockEdge         if 1 I2S data is strobed on falling clock edge, if 0 on rising edge
+; The 926 lacks the I2sPllOverride bit.
+
+; The 926 has an SscgControl reg at address 44.
+
+AeqControl              53  RW  8 0x00
+  7  1  Unsigned  Reserved               this bit is reserved
+  6  1  Unsigned  AeqRestart             1 restarts AEQ adaptation
+  5  1  Unsigned  LcblOverride           if 1 LCBL is controlled by register
+  4  1  Unsigned  LCBL                   1 enables LCBL mode
+  0  4  Unsigned  Reserved               these bits are reserved
+; The 926 lacks this AeqControl reg.
+
+PgInternalClkEnable     57  RW  8 0x00
+  2  6  Unsigned  Reserved               these bits are reserved
+  1  1  Unsigned  PgIntClk               1 enables pattern generator with internal PCLK
+  0  1  Unsigned  Reserved               this bit is reserved
+; The 926 lacks this PgInternalClkEnable reg.
+
+Is2DivSelect            58  RW  8 0x00
+  7  1  Unsigned  MclkOverride           Override divider select for MCLK
+  4  3  Unsigned  MclkFrequencySelect    sets I2S master clock frequency
+  0  4  Unsigned  Reserved               these bits are reserved
+; The 926 datasheet calls this the Is2MclkOutput reg.
+
+AdaptiveEqStatus        59  RO  8 0x00
+  6  2  Unsigned  Reserved               these bits are reserved
+  0  6  Unsigned  EqualizerSetting       current equalizer level
+; The 926 lacks this AdaptiveEqStatus reg.
+; I suspect this AdaptiveEqStatus reg is read-only although the data sheet doesn't say.
+; The 926 has a LinkErrorCount reg at address 65.
+
+AdaptiveEqualizerBypass 68  RW  8 0x60
+  5  3  Unsigned  Stage1Equalization     sets amount of stage 1 equalization
+  4  1  Unsigned  Reserved               this bit is reserved
+  1  3  Unsigned  Stage2Equalization     sets amount of stage 2 equalization
+  0  1  Unsigned  AdaptiveEQ             1 disables adaptive EQ
+; The 928 chip's power-up default for this reg is 0x60, which is a certain
+; equalization recipe.. However optimal equalization depends upon the
+; particular interconnect cable. We want to enable adaptive equalization
+
+AdaptiveEqMinMax        69  RW  8 0x88
+  4  4  Unsigned  Reserved               these bits are reserved
+  0  4  Unsigned  EqFloorSetting         sets floor for equalizer level
+; The 926 lacks this AdaptiveEqMinMax reg.
+
+MapSelect               73  RW  8 0x00
+  7  1  Unsigned  MapSelPinStatus        shows value of MAPSEL pin
+  6  1  Unsigned  MapSelOverride         if 1 MAPSEL is set from reg
+  5  1  Unsigned  MapSel                 if 0 Map Select setting LSBits on TxOut3, if 1 MSBits
+  0  5  Unsigned  Reserved               these bits are reserved
+; The 926 lacks this MapSelect reg.
+
+LoopThroughDriver       86  RW  8 0x08
+  4  4  Unsigned  Reserved               these bits are reserved
+  3  1  Unsigned  CmlOutputDisable       if 1 disable CML output (the default)
+  0  3  Unsigned  Reserved               these bits are reserved
+
+PatternGeneratorControl 100  RW  8  0x10
+  4  4  Unsigned  PatternSelect      select among the built-in colorbar patterns
+  3  1  Unsigned  Reserved           this bit is reserved
+  2  1  Unsigned  ColorBarPattern    if 1 color bars are enabled
+  1  1  Unsigned  VcomPatternReverse if 1 color sequence from top left is RBCY
+  0  1  Unsigned  PatternGenEnable   enable the video pattern generator
+
+PatternGeneratorConfig  101  RW  8  0x00
+  7  1  Unsigned  Reserved           this bit is reserved
+  6  1  Unsigned  CheckerboardScale  if 1 scale checkerboard patterns by 8
+  5  1  Unsigned  CustomCheckerboard if 1 enable custom color in checkerboard
+  4  1  Unsigned  18bitMode          enable 18-bit color mode
+  3  1  Unsigned  ExternalClock      if 1 use external PCLK, if 0 use internally generated clock
+  2  1  Unsigned  TimingSelect       if 1 pattern generator creates its own video timing, if 0 it uses externally supplied timing
+  1  1  Unsigned  ColorInvert        invert the color output
+  0  1  Unsigned  AutoScrollEnable   enables the Pattern Generator to automatically move to the next enabled pattern
+
+PatternGenIndirectAddr  102  RW  8  0x00
+  0  8  Unsigned  IndirectAddress    the address of an indirectly mapped register
+
+PatternGenIndirectData  103  RW  8  0x00
+  0  8  Unsigned  IndirectData       the data to be written to an indirect register
+
+GpiPinStatus1           110  RO  8  0x00
+  7  1  Unsigned  Gpi7PinStatus          readable when REG_GPIO7 is set as an input
+  6  1  Unsigned  Gpi6PinStatus          readable when REG_GPIO6 is set as an input
+  5  1  Unsigned  Gpi5PinStatus          readable when REG_GPIO5 is set as an input
+  4  1  Unsigned  Reserved               this bit is reserved
+  3  1  Unsigned  Gpi3PinStatus          readable when REG_GPIO3 is set as an input
+  2  1  Unsigned  Gpi2PinStatus          readable when REG_GPIO2 is set as an input
+  1  1  Unsigned  Gpi1PinStatus          readable when REG_GPIO1 is set as an input
+  0  1  Unsigned  Gpi0PinStatus          readable when REG_GPIO0 is set as an input
+; The 926 lacks this GpiPinStatus1 reg.
+
+GpiPinStatus2           111  RO  8  0x00
+  1  7  Unsigned  Reserved               these bits are reserved
+  0  1  Unsigned  Gpi8PinStatus          readable when REG_GPIO8 is set as an input
+; The 926 lacks this GpiPinStatus2 reg.
+
+ID0                     240  RO  8  0x5F
+  0  8  Unsigned  ID0          first byte of deserializer ID
+
+ID1                     241  RO  8  0x55
+  0  8  Unsigned  ID1          second byte of deserializer ID
+
+ID2                     242  RO  8  0x42
+  0  8  Unsigned  ID2          third byte of deserializer ID
+
+ID3                     243  RO  8  0x39
+  0  8  Unsigned  ID3          fourth byte of deserializer ID
+
+ID4                     244  RO  8  0x32
+  0  8  Unsigned  ID4          fifth byte of deserializer ID
+
+ID5                     245  RO  8  0x38
+  0  8  Unsigned  ID5          sixth byte of deserializer ID
+
+; These HDCP ID bytes spell out "_UB928"

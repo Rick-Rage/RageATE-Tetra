@@ -1,0 +1,110 @@
+; This file describes contents for the registers in the Cyterra RF Source Module.
+
+; A semi-colon indicates a comment line.
+; The format of the non-comment lines is:
+; RegName  RegValue
+; A RegValue can be expressed in hex if preceded by 0x or 0X.
+; For those registers that consist of separate bit fields the subsequent comment lines describe:
+;   LSBit   NumBits  Unsigned/Signed  FieldName  Explanation
+; The read-only registers (such as FWVER, etc.) are identified in comment lines.
+
+;FWVER                read-only
+;STATUS               read-only
+;FREQ_COUNT           read-only
+CTRL                    0x0180
+; The LSBit (MANVOLTCTRL) of this CTRL reg must be set to 1 to enable VCO calibration
+RETRACE_TIME              72
+TABLE_DEPTH              697
+;MSCANLINES           read-only
+;SOS_COUNTER          read-only
+FILTER_SWITCH            308
+VTUNE                    0
+GATETIME                 38400
+MUTE1                    0x0000
+MUTE2                    0x0000
+MUTE3                    0x0000
+MUTE4                    0x0000
+MUTE5                    0x0000
+MUTE6                    0x0000
+MUTE7                    0x0000
+MUTE8                    0x0000
+MUTE9                    0x0000
+MUTE10                   0x0000
+MUTE11                   0x0000
+MUTE12                   0x0000
+MUTE13                   0x0000
+MUTE14                   0x0000
+MUTE15                   0x0000
+MUTE16                   0x0000
+MUTE17                   0x0000
+MUTE18                   0x0000
+MUTE19                   0x0000
+MUTE20                   0x0000
+
+; The SWITCH0 register always holds the value 0x0015 which
+; routes the power amp output to the "DEBUG" port (i.e. J10)
+; and hence not to any AM.
+
+SWITCH0                  0x0015
+
+; This RFSM_Registers_WithRunningStart.txt file is used with the
+; AmCombinedTables_WithRunningStart.txt file which specifies
+; that each of the 9 AMs should (in sequence) be activated for
+; 24 chirps, which is a total of 216 chirps.
+; During AM1's and AM9's 24 chirps 45 different Tx+Rx
+; antenna pairings occur. During everybody else's 24 chirps
+; 48 Tx+Rx antenna pairings occur. This totals to 45 + (7*48) + 45 =
+; 426 antenna pairings. Note that 216 is NOT half of 426 !
+
+; During the N chirps controlled by the SWITCH1 reg (where
+; N is the MSByte of the SWITCH1 reg) the RFSM's power amp
+; is connected to whichever of the RFSM's SMA outputs as are
+; specified by the LSByte of the SWITCH1 reg. For all SWITCHx
+; registers, this LSByte is interpreted as shown below:
+
+;    0x15    nobody
+;    0x10    AM1  AM2
+;    0x00    AM1  AM2  AM3
+;    0x02    AM2  AM3  AM4
+;    0x0A    AM3  AM4  AM5
+;    0x2A    AM4  AM5  AM6
+;    0x2B    AM5  AM6  AM7
+;    0x2F    AM6  AM7  AM8
+;    0x3F    AM7  AM8  AM9
+;    0x3D         AM8  AM9
+
+; For the recipe described in AmCombinedTables_WithRunningStart.txt
+; where we want AM1 & AM2 driven during the first 24 chirps,
+; and then AM1 & AM2 & AM3 driven during the next 24 chirps, etc.
+; we would want the following programming in the RFSM's SWITCHx regs:
+
+;    SWITCH0 = 0x0015   causing  nobody        to be driven while the state machine is idle
+;    SWITCH1 = 0x1810   causing  AM1  AM2      to be driven for 24 chirps
+;    SWITCH2 = 0x1800   causing  AM1  AM2  AM3 to be driven for 24 chirps
+;    SWITCH3 = 0x1802   causing  AM2  AM3  AM4 to be driven for 24 chirps
+;    SWITCH4 = 0x180A   causing  AM3  AM4  AM5 to be driven for 24 chirps
+;    SWITCH5 = 0x182A   causing  AM4  AM5  AM6 to be driven for 24 chirps
+;    SWITCH6 = 0x182B   causing  AM5  AM6  AM7 to be driven for 24 chirps
+;    SWITCH7 = 0x182F   causing  AM6  AM7  AM8 to be driven for 24 chirps
+;    SWITCH8 = 0x183F   causing  AM7  AM8  AM9 to be driven for 24 chirps
+;    SWITCH9 = 0x183D   causing       AM8  AM9 to be driven for 24 chirps
+
+SWITCH1                  0x1810
+SWITCH2                  0x1800
+SWITCH3                  0x1802
+SWITCH4                  0x180A
+SWITCH5                  0x182A
+SWITCH6                  0x182B
+SWITCH7                  0x182F
+SWITCH8                  0x183F
+SWITCH9                  0x183D
+
+SOS_DELAY                1940
+; The RFSM's SOS_DELAY register should be set equal to the
+; value of AM #1's (ANT_SELECT_INITIAL_DELAY + ADC_INITIAL_DELAY - 32) value.
+; However the AM's FPGA counts out ANT_SELECT_INITIAL_DELAY and
+; ADC_INITIAL_DELAY using a 75 MHz state machine clock while the RFSM's
+; FPGA counts out SOS_DELAY using a 150 MHz state machine clock. Hence
+; we need:
+;   SOS_DELAY = ( ANT_SELECT_INITIAL_DELAY(AM1) + ADC_INITIAL_DELAY - 32 ) / 75 * 150
+;             = ( ANT_SELECT_INITIAL_DELAY(AM1) + ADC_INITIAL_DELAY - 32 ) * 2

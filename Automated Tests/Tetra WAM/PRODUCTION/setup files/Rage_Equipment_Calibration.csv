@@ -1,0 +1,8 @@
+INST NAME,TYPE,ADDRESS,Cal_Required,SN,Cal_Due,Cal_Last,,Instrument Names,Type
+OVEN,Temp Plate,TCPIP0::169.254.70.190::502::SOCKET,0,,,,,"PS1,PS2,PS3",Power Supply
+PS1,PowerSupply,TCPIP0::169.254.70.130::inst0::INSTR,0,,,,,OVEN,Temp Controllers
+EXA,SpectrumAnalyzer,TCPIP0::169.254.70.120::inst0::INSTR,1,MY57470396,1/24/2023,1/24/2021,,"SA,EXA",Spectrum Analyzers
+SigGen1,SigGen,TCPIP0::169.254.70.100::inst0::INSTR,1,MY53270534,6/12/2023,6/12/2020,,"SigGen1,SigGen2,SigGen3",Signal Generators
+PNA,PNA,TCPIP0::169.254.70.180::inst0::INSTR,1,US52120122,4/21/2023,4/21/2021,,"VNA,PNA",Network Analyzerz
+RFSwitch,SWITCH,GPIB0::29::INSTR,0,,,,,RFSwitch,Switch Controllers
+Gantry,Gantry,COM5,0,,,,,Gantry,Gantry

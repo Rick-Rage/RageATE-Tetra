@@ -1,0 +1,87 @@
+; This is a human-readable "DMA Transfer Table" for the V3ISU's FPGA.
+; It must be converted to a binary format by a tool such as my
+; FieldTest.exe exerciser.
+
+; The total # of antenna pairings (i.e. logical antennas) assumed by this
+; DMA Transfer Table is 426. Each logical antenna samples 256 frequencies,
+; resulting in 256 DWORDS of AtoD data. Hence this table moves 426 packets
+; of 256 DWORDS each. This breaks out as 45 packets of 256 DWORDS from AM1,
+; 48 packets from AM2 through AM8, and 45 packets from AM9.
+
+; This particular DMA Transfer Table DOES NOT reorder the data arriving from
+; the 9 Mercury AMs.
+
+; -------------------
+
+; Everything after a semi-colon is a comment.
+
+; The format of each line is:
+;   AM identifier (range 1 to 9), quantity of DWORDs (range 1 to 4096)
+
+; Each non-comment line of this ASCII file is processed to create the
+; contents for one entry of a 16-bit wide table where the first 4 (most-significant)
+; bits hold the AM identifier and the remaining 12 bits hold 1 less than the quantity
+; of DWORDS that should be pulled from that AM FIFO (which is a 32-bit wide FIFO)
+; and transferred into the DMA Transfer FIFO. Since the quantity field is
+; only 12 bits the largest transfer that can be described by a single line
+; in this file is 4096 DWORDS. This is possible becauses the standard "minus 1"
+; trick is employed. That is, when this ASCII file holds "4096" the 12-bit
+; table entry will be 12'b111111111111 and this will cause a transfer of
+; 4096 DWORDs out of the indicated AM FIFO. As a consequence of the "minus 1"
+; trick the quantity field of "0" is illegal in this human readable ASCII file
+; except when used along with AM identifier = 0.
+
+; The FPGA's table is populated with however many entries are found in this
+; ASCII file. After the ASCII file has been completely processed one additional
+; table entry of all zero bits is added at the end of the table to represent
+; the end of the table (this all-zeros value can be employed as a special
+; sentinel since the AM identifier field does not allow a 0 value).
+; When the FPGA state machine that walks through the table reaches the end
+; of the table it automatically starts over. Generally the table contents
+; would be designed such that this rollover coincides with the start of a new
+; scanline.
+
+; Because each entry of this table can be no larger than 4096
+; we must use multiple-entries to request larger values.
+
+; AM1 ships out 45 chirp packets hence 45 * 256 = 11520 DWORDS
+; Note that 4096 + 4096 + 3328 = 11520
+
+1, 4096
+1, 4096
+1, 3328
+
+; AM2 thru 8 ship out 48 chirp packets hence 48 * 256 = 12288 DWORDS
+; Note that 4096 + 4096 + 4096 = 12288
+
+2, 4096
+2, 4096
+2, 4096
+3, 4096
+3, 4096
+3, 4096
+4, 4096
+4, 4096
+4, 4096
+5, 4096
+5, 4096
+5, 4096
+6, 4096
+6, 4096
+6, 4096
+7, 4096
+7, 4096
+7, 4096
+8, 4096
+8, 4096
+8, 4096
+
+; AM9 ships out 45 chirp packets hence 45 * 256 = 11520 DWORDS
+
+9, 4096
+9, 4096
+9, 3328
+
+; The end of the table must always be marked with a zero "AM identifier" field.
+
+0, 0

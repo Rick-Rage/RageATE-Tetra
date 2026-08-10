@@ -1,0 +1,243 @@
+; A semi-colon indicates a comment line.
+; The format of the non-comment lines is:
+; RegName  RegValue
+; A RegValue can be expressed in hex if preceded by 0x or 0X.
+; For those registers that consist of separate bit fields the subsequent comment lines describe:
+;   LSBit   NumBits  Unsigned/Signed  FieldName  Explanation
+; The read-only registers (such as FPGA_VERSION) are identified in comment lines.
+
+; FPGA_VERSION          read-only
+
+SYS_RUN 		0xC000
+SYNC_CONFIG		0x0027
+POS_IN_DELAY		2
+POS_IN_DIVIDE		33
+; In the PV1 POS_IN_DIVIDE = 26 and we generate 224 scanlines
+; In the PV2 POS_IN_DIVIDE = 36 and we generate 224 scanlines
+; In the PVW POS_IN_DIVIDE = 33 and we generate 240 scanlines
+
+MECH_SCAN_ACTIVE	22504
+; Make MECH_SCAN_ACTIVE an integer multiple of 8 at least while
+; the RFSM and AMs are employing opposite edges of the SOS trigger.
+
+MECH_SCAN_COUNT		240
+
+; MECH_SCAN_PCOUNT      read-only
+
+SPATIAL_SSDELAY		 0x00FF
+SPATIAL_SSDELAY_EXTEND	 0x0000
+
+SPATIAL_CYCLES		 24
+; The SPATIAL_CYCLES register declares the number of chirps in a
+; vertical scanline. Note that it is NOT the sum of the chirps
+; seen mentioned in the AmCombinedTables...txt file because
+; many of those chirps overlap !
+
+; SPATIAL_CYCLES used to be UBER important for triggering
+; other state machines (antennaController.v, adcController.v,
+; rampController.v, pulseModController.v, etc.) which ran in
+; the ISU FPGA and performed "per chirp" repeating activity.
+; But now in the wideband Payette product these other activities
+; have moved into the FPGAs located on the AMs and the RFSM
+; and hence SPATIAL_CYCLES is only now used by the non-critical
+; trigger_generator.v state machine.
+
+; For the quasi-monostatic architecture during most chirps 2 Demod circuits
+; will be simultaneously active (possibly on different AM cards) but during
+; a few only 1 Demod circuit will be active. Hence determination of the
+; correct value for the SPATIAL_CYCLES register requires deep inspection
+; of the AmCombinedTables...txt file due to the fact that operations on
+; the different AMs overlap.
+
+; In the quasi-monostatic architecture AM1 by itself is active for the first 21
+; chirps. During the first 3 of these 21 chirps only AM1's Demod1 is active and
+; then for the next 18 chirps two Demod circuits on AM1 are active. 
+
+
+SPATIAL_PERIOD		 2059
+; Since state_clk is 150 MHz the SPATIAL_PERIOD (a.k.a. SP)
+; value of 2059 results in a freq chirp period of 13.727 usec.
+; Note that 13.727 usec/chirp * 216 chirps = the correct 2.9 msec
+; scanline time.
+
+SPATIAL_ACTIVE_PERIOD	 150
+
+SCAN_LINE_SAMPLE_CNT_MSW 0x0000
+SCAN_LINE_SAMPLE_CNT_LSW 0x2A00
+; For the quasi-monostatic architecture (2 demods active simultaneously) AM1 thru AM9
+; generate 426 chirps worth of AtoD data (i.e. 426 "antenna pairings"). Hence:
+;    SCAN_LINE_SAMPLE_CNT = 45 * 256 + ( 7 * 48 * 256 ) + 45 * 256   = 109056 = 0x0001_AA00 DWORDs
+; Hence 240 such scanlines generate 240 * 109056 * 4 =  105 Mbytes
+; However when only a single AM is attached the amount of data in a scanline is:
+; 42 * 256 = 10752 = 0x0000_2A00
+
+; SCAN_LINE_TX_CNT       read-only
+
+SCAN_INT_CONFIG         0x0000
+SCAN_INT_SKIP           0x0000
+SCAN_UPDATE_DELAY       0x0001
+
+TRIGGER_ON_SCANLINE    	 5
+TRIGGER_ON_ANT           3
+TRIGGER_ON_FREQ          8
+
+I2C_CLOCK_PRESCALE      75
+; I2C_CLOCK_PRESCALE = state_clk_Freq / 5 / SCLK_freq
+; Hence for 400 kHz I2C and state_clk = 150 MHz you want
+; I2C_CLOCK_PRESCALE = 150e6 / 5 / 400e3 = 75
+
+I2C_SLAVE_DEV_ADDR       0
+I2C_REGISTER_ADDR        0
+I2C_CONTROL              1
+; Note the START_TRANSACTION bit in the I2C_CONTROL reg powers up de-asserted
+; and should be left high between I2C transactions.
+
+; I2C_STATUS             read-only
+; The TRANSACTION_FINISHED bit in the I2C_STATUS reg will power-up asserted
+; indicating that the circuit is ready for the first I2C transaction to be commanded.
+
+; I2C_CHECKSUM           read-only
+
+FREE_RUN_HALF_PERIOD	15000
+; The period produced by the free-running oscillator is
+;     FREE_RUN_HALF_PERIOD * 2 * 16 / state_clk_freq
+;   = FREE_RUN_HALF_PERIOD * 32 / 150e6
+; Hence if FREE_RUN_HALF_PERIOD = 15000 then the period is 3.2 msec
+
+EXPECTED_IDLE_SENTINEL_MSW  0
+EXPECTED_IDLE_SENTINEL_LSW  0
+
+; CLOCK_FRAMING_ERRORS   read-only
+; IDLE_SENTINEL_ERRORS   read-only
+; START_SENTINEL_ERRORS  read-only
+; END_SENTINEL_ERRORS    read-only
+
+; CAPTURED_AMx_START_SENTINEL_MSW   read-only  ; SERDES channel selected by SERDES_CHANNEL_SELECT reg
+; CAPTURED_AMx_START_SENTINEL_LSW   read-only  ;    "        "         "
+; CAPTURED_AMx_FIRST_DATA_WORD_MSW  read-only  ;    "        "         "
+; CAPTURED_AMx_FIRST_DATA_WORD_LSW  read-only  ;    "        "         "
+; CAPTURED_AMx_SECOND_DATA_WORD_MSW read-only  ;    "        "         "
+; CAPTURED_AMx_SECOND_DATA_WORD_LSW read-only  ;    "        "         "
+; CAPTURED_AMx_END_SENTINEL_MSW     read-only  ;    "        "         "
+; CAPTURED_AMx_END_SENTINEL_LSW     read-only  ;    "        "         "
+
+PERFORM_BITSLIP          0
+
+; Without good reason, we don't disturb the following SERDES delay line settings:
+; Unfortunately the Rev 0010 V3ISU FPGA has incorrect values for these registers
+; hence we need to patch them up:
+
+FPD1_CLOCK_DELAY        0x0010
+FPD1_DATA2_DATA1_DELAY  0x1010
+FPD1_DATA4_DATA3_DELAY  0x1010
+
+FPD2_CLOCK_DELAY        0x0010
+FPD2_DATA2_DATA1_DELAY  0x1010
+FPD2_DATA4_DATA3_DELAY  0x1010
+
+FPD3_CLOCK_DELAY        0x0010
+FPD3_DATA2_DATA1_DELAY  0x0C0C
+FPD3_DATA4_DATA3_DELAY  0x0C0C
+
+FPD4_CLOCK_DELAY        0x0010
+FPD4_DATA2_DATA1_DELAY  0x1010
+FPD4_DATA4_DATA3_DELAY  0x1010
+
+FPD5_CLOCK_DELAY        0x0010
+FPD5_DATA2_DATA1_DELAY  0x1010
+FPD5_DATA4_DATA3_DELAY  0x1010
+
+FPD6_CLOCK_DELAY        0x0010
+FPD6_DATA2_DATA1_DELAY  0x1212
+FPD6_DATA4_DATA3_DELAY  0x1212
+
+FPD7_CLOCK_DELAY        0x0010
+FPD7_DATA2_DATA1_DELAY  0x1010
+FPD7_DATA4_DATA3_DELAY  0x1010
+
+FPD8_CLOCK_DELAY        0x0010
+FPD8_DATA2_DATA1_DELAY  0x0808
+FPD8_DATA4_DATA3_DELAY  0x0808
+
+FPD9_CLOCK_DELAY        0x0010
+FPD9_DATA2_DATA1_DELAY  0x1010
+FPD9_DATA4_DATA3_DELAY  0x1010
+
+; CURRENT_FPD1_WORD_MSW         read-only
+; CURRENT_FPD1_WORD_LSW         read-only
+; CURRENT_FPD2_WORD_MSW         read-only
+; CURRENT_FPD2_WORD_LSW         read-only
+; CURRENT_FPD3_WORD_MSW         read-only
+; CURRENT_FPD3_WORD_LSW         read-only
+; CURRENT_FPD4_WORD_MSW         read-only
+; CURRENT_FPD4_WORD_LSW         read-only
+; CURRENT_FPD5_WORD_MSW         read-only
+; CURRENT_FPD5_WORD_LSW         read-only
+; CURRENT_FPD6_WORD_MSW         read-only
+; CURRENT_FPD6_WORD_LSW         read-only
+; CURRENT_FPD7_WORD_MSW         read-only
+; CURRENT_FPD7_WORD_LSW         read-only
+; CURRENT_FPD8_WORD_MSW         read-only
+; CURRENT_FPD8_WORD_LSW         read-only
+; CURRENT_FPD9_WORD_MSW         read-only
+; CURRENT_FPD9_WORD_LSW         read-only
+
+SERDES_CHANNEL_SELECT   0
+
+;SERDES_PLL_STATUS              read-only
+;COUNT_OF_AMx_IDLE_ERRORS       read-only  ; AM selected by SERDES_CHANNEL_SELECT reg
+;AMx_FIFO_HIGH_WATER_LEVEL      read-only  ; AM FIFO selected by SERDES_CHANNEL_SELECT reg
+
+;DMA_FIFO_HIGH_WATER_LEVEL      read-only
+
+AM1_NUM_WORDS_TO_RECEIVE     10752    ; 42 * 256 = 10752
+AM2_NUM_WORDS_TO_RECEIVE     12288    ; 48 * 256 = 12288
+AM3_NUM_WORDS_TO_RECEIVE     12288
+AM4_NUM_WORDS_TO_RECEIVE     12288
+AM5_NUM_WORDS_TO_RECEIVE     12288
+AM6_NUM_WORDS_TO_RECEIVE     12288
+AM7_NUM_WORDS_TO_RECEIVE     12288
+AM8_NUM_WORDS_TO_RECEIVE     12288
+AM9_NUM_WORDS_TO_RECEIVE     11520
+; These AMx_NUM_WORDS_TO_RECEIVE registers tell the V3ISU when
+; to expect the END_OF_DATA_SENTINEL. They need to match the
+; programming of the 9 Antenna Modules. Note that
+; 45 * 256 = 11520 and 48 * 256 = 12288.
+
+;NUM_WORDS_RECEIVED_MSW         read-only
+;NUM_WORDS_RECEIVED_LSW         read-only
+
+;NUM_AMx_WORDS_AVAILABLE        read-only
+
+;CURRENT_DMA_TABLE_INDEX        read-only
+;CURRENT_DMA_TABLE_ENTRY        read-only
+
+START_OF_DATA_SENTINEL_MSW   0x0055
+START_OF_DATA_SENTINEL_LSW   0x5555
+END_OF_DATA_SENTINEL_MSW     0x00AA
+END_OF_DATA_SENTINEL_LSW     0xAAAA
+
+NUM_FREQS                       256
+FREQ_PERIOD                       8
+INITIAL_FREQ_DELAY               20
+INITIAL_SPATIAL_DELAY           200
+;CURRENT_FPDx_RECOVERED_CLK    read-only
+;MIN_INTRASCANLINE_TIME        read-only
+
+
+
+; ******************   Start of 32-bit FPGA registers  ********************
+
+
+;DMA_BUFFER_ADDR_LSW    treated as read-only
+;DMA_BUFFER_ADDR_MSW    treated as read-only
+;DMA_BUFFER_LENGTH      treated as read-only
+;DMA_NUM_DWORDS_SENT    read-only
+;PCIE_DMA_FIFO1_STATUS  read-only
+;PCIE_DMA_FIFO2_STATUS  read-only
+;PCIE_TRN_STATUS        read-only
+
+SCRATCH_REG           0xAABBCCDD
+
+PCIE_DMA_TEST_CTRL       0
+

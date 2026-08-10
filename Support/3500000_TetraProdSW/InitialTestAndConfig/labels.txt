@@ -1,0 +1,6 @@
+TA22300108,0x00003A0E4584,2230,C.00, Wideband Antenna Module,5083561, RaGE Systems, www.ragesystems.com
+0113
+002, GLEN WOLVERTON, LWL
+
+
+WAM-000112,0x00003A0E4584,2230,C.00, Wideband Antenna Module,5083561, RaGE Systems, www.ragesystems.com

@@ -1,0 +1,6 @@
+(Git Softare Check) # Place path on a line for Git to check if it is up to date
+C:\TetraLabGUI
+C:\3500000_TetraProdSW
+C:\3500004_TetraProductionReportGenerator
+C:\3500007_TetraFinalTestAnalysis
+C:\FieldTestApp

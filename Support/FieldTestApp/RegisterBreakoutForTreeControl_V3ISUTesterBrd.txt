@@ -1,0 +1,63 @@
+; This file describes the registers in the V3ISU Tester Board Module.
+; These registers (and their subfields) are described in the document
+; entitled V3ISU production tester SW application requirements 7/19/2019 Revision 1.
+
+; The contents of this file are parsed by my cTreeViewBox class.
+; A semi-colon indicates a comment line.
+; The format of the non-indendented lines is:
+; RegName  RegAddr  RW/RO DefValue
+; The format of the indendented lines is:
+; LSBit   NumBits  Unsigned/Signed  FieldName  PopUpToolTip(optional)
+; where blanks (space characters) separate these 5 fields.
+; The PopUpToolTip includes the remainder of the line and hence can include blanks.
+; The PopUpToolTip can be made multiline by including the 2 char sequence "\n".
+; LSBit counts from 0.
+; Values can be expressed in hex if preceded by 0x or 0X.
+
+FWVER                    0 RO  16 0x0000
+TBSTATUS                 1 RO  16 0x0000
+;0  1  Varies TBD...
+
+CHAN_PWR_STAT            2 RO  10 0x0000
+; Voltage Test results for each one of the AM channels, 
+; Magnetic Encoder Power and RFSM. (Bits 1-9 AM s channels, 10- RFSM, 
+; 11- Magnetic Encoder Power)
+
+CHAN_SOS_STAT            3 RO  10 0x0000
+; SoS Test results for each one of the AM channels and RFSM 
+;  0  1  Unsigned  AM1
+;  1  1  Unsigned  AM2
+;  2  1  Unsigned  AM3
+;  3  1  Unsigned  AM4
+;  4  1  Unsigned  AM5
+;  5  1  Unsigned  AM6
+;  6  1  Unsigned  AM7
+;  7  1  Unsigned  AM8
+;  8  1  Unsigned  AM9
+
+
+CHAN_CLK_STAT            4 RO  10 0x0000
+; Clocks Test results for each one of the AM channels and RFSM 
+; Note: Each bit on Channels Status registers represent Pass/Fail for individual channel.  
+; Example: Bit 1 on Channels SoS Status register on Address 0x0003 represent SoS signal 
+; on channel AM1.  When bit is low then no SoS signal detected, if bit is high then SoS 
+; signal is detected.                                                 
+
+CMD_REG                  5 RW  16 0x0000
+; Command Register   Commands from Testing Software to Test Board Control logic.
+; o	Code 0x5050 - Start Test High Speed Communication Over FPD Link.  AM1 is active
+; o	Code 0x2A2A   Advance to next channel.
+; o	Code 0x0505   Start Magnetic Encoder Emulation.
+; o     Code 0x5505   Start mechanic Sync 
+; o	Code 0xF0F0   End of test
+
+CHN_SEL_REG              6 RW  4 0x0000
+; Read/Write Register to test comm to Tester board.
+
+RW_REG                   7 RW  16 0x0000
+; Read/Write Register to test comm to Tester board.
+MAG_ENCODER_STAT                   8 RW  16 0x0000
+; Read/Write Register to test comm to Tester board.
+MECH_SYNC_STAT                   9 RW  16 0x0000
+; Read/Write Register to test comm to Tester board.
+

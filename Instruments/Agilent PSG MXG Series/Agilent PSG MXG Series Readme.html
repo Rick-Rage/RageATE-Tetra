@@ -1,0 +1,292 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+  <title>Keysight/Agilent PSG MXG Series Instrument Driver Readme</title>
+</head>
+<body>
+<pre><font ,="" face="Times New Roman" size="3">
+</font><h2><font ,="" face="Times New Roman" size="3">Keysight/Agilent PSG MXG Series Instrument Driver Readme</font></h2>
+<para><font ,="" face="Times New Roman" size="3">To rate this instrument driver, go to the Agilent PSG MXG Series driver download page on the <a href="http://www.ni.com/idnet">Instrument Driver Network</a>.</font></para>
+<h4><font ,="" face="Times New Roman" size="3">
+1. Overview</font></h4>
+<para><font ,="" face="Times New Roman" size="3">Instrument Driver Technology: LabVIEW Plug and Play (project-style)
+Manufacturer: Keysight/Agilent Technologies
+Supported Language(s): LabVIEW
+Supported Model(s): E8241A, E8244A, E8251A, E8254A, E8247C, E8257C, E8267C, E8257D, E8267D, N5181A, N5182A, N5183A, N5161A, N5162A, N5171B, N5172B, N5181B, N5182B, N5173B, N5183B
+Model(s) Tested: N5182A, E8257D, N5172B
+Interface(s): GPIB, Ethernet, USB
+Firmware Revision(s) Tested: A.01.20 (N5182A), C.05.37 (E8257D), B.01.10(N5172B), B.01.57(N5172B)
+Certified: Yes
+NI Supported: Yes
+Source Code Available: Yes
+Driver Revision: 2.0
+Original Release Date: 08/03/2007
+Current Revision Date: 09/15/2016</font></para><h4><font ,="" face="Times New Roman" size="3">
+
+2. Required Software</font></h4><para><font ,="" face="Times New Roman" size="3">
+Some software components need to be installed before using this instrument driver. The minimum versions of these components are listed below, and can be downloaded from the Download Site.
+<br>VISA 5.0 or later Note: VISA has additional software requirements. 
+<br>Refer to the <i>LabVIEW Help</i> for more information about software requirements. You access the <i>LabVIEW Help</i> by selecting <i>Help&raquo;Search the LabVIEW Help</i>.</font></para>
+<h4><font ,="" face="Times New Roman" size="3">
+
+3. Known Issues</font></h4><para><font ,="" face="Times New Roman" size="3">
+
+
+To report issues or provide feedback about this instrument driver,  <a href="http://www.ni.com/en-us/support.html">please contact technical support</a>.
+
+
+<br>PSG series models were not tested thoroughly, due to unavailability of instruments for this series. For model tested N5182A, all options are valid in firmware revision A.01.20 or later.
+<br>{Notes for REV 2.0}
+<li>SCPI Node Express VI is only supported in LabVIEW 2012 or later.
+<li>Configure Frequency Channel.vi: B850BDCS option for Channel Band is unsupported.
+<li>Load and Save Data (Generic Data).vi: NVHDR for Destination File must follows a strict internal format or it generates error messages. Also, it must be created after the NVWFM file has been written first.
+<li>Configure ALC.vi: External Detector option for ALC Source is only valid when a 20/40 GHz external Millimeter-Wave accessory is connected to the signal generator.
+<li>Configure ARB.vi and Agilent PSG MXG Series Operate N5102A Module in Output Mode.vi: To enable ARB, make sure you fist select a waveform.
+<li>Perform Diagnostic Loop Back Test.vi: You must have a N5102A attached to the rear panel LVDS port.</font></para> <h4><font ,="" face="Times New Roman" size="3">
+
+5. Revision History</font></h4><para>
+<font ,="" face="Times New Roman" size="3">The latest version of this and other LabVIEW and LabWindows/CVI instrument drivers can be downloaded at the <a href="http://www.ni.com/idnet">Instrument Driver Network</a>.
+<br>REV 1.0,  8/3/2007 Original Release
+<br>REV 1.1,  10/24/2007 Modified by: Edward Zhang
+Remove Phase Noise Offsets command from Configure Frequency. Modify Configure RF Output for model recognition.
+<br>REV 1.2,  12/04/2007 Modified by: Edward Zhang Documentation update ALC Level in Configure Frequency Power example VI.
+<br>REV 1.3,  04/30/2008 Modified by: Edward Zhang Add support for N5183A.
+<br>REV 1.4,  06/12/2009 Modified by: Edward Zhang Modify Configure Power, Configure ALC, Configure ALC Search, Configure RF Output and Configure Modulation (IQ) for option recognition.
+<br>REV 1.4.1,  01/27/2010 Modified by: Brandon Sun Update the documentation of controls in Configure Digital Signal Interface Module and Configure Sweep(Ramp).
+<br>REV 1.5,  10/14/2011 Modified by: Chao Wang Add Enable Low-Band Filter.vi to support for option 1EH Modify Configure Power.vi to set the power offset before setting the power.
+<br>REV 1.6,  11/30/2012 Modified by: Chao Wang Add support for N5161A, N5162A, N5171B, N5172B, N5181B, N5182B.
+New VIs:
+Agilent PSG MXG Series Configure Low Frequency Output.vi
+Clear Phase Accumulation.vi
+Configure AUX Port.vi
+Configure AWGN Noise.vi
+Configure AWGN Power.vi
+Configure External ALC.vi
+Configure External Modulation.vi
+Configure Internal Modulation.vi
+Configure Internal Sweep Trigger.vi
+Configure IQ Input.vi
+Configure IQ Source Ratio.vi
+Configure Modulation (Custom Advanced).vi
+Configure Modulation (LF Output).vi
+Configure Modulation Waveform Advanced (Dual-Sine).vi
+Configure Modulation Waveform Advanced (Swept-Sine).vi
+Configure Pattern Trigger Source.vi
+Configure Phase Noise Modulation.vi
+Configure Power Alternate.vi
+Configure Custom Real Time Noise
+Configure Real Time Power.vi
+Configure Signal Polarity.vi
+Configure Signal Route.vi
+Configure Trigger Source.vi
+Configure VM Trigger.vi
+Read Output Channel Status.vi
+Updated VIs:
+(1) Both Code and Description Modified:
+-Public:
+Configure ALC Search.vi - Modify model condition to support new models.
+Configure ALC.vi - Modify model condition to support new models.
+Configure Baseband Frequency Offset.vi - Add Custom option for Modulation Format.
+Configure Data Clock.vi - Modify model condition to support new models.
+Configure External Trigger.vi - The commands like *TRIGger:EXTernal[:SOURce] EPT1|EPT2, the :SOUR cannot be omitted for 5172B.
+Configure IQ Adjustment External.vi - Modify model condition to support new models.
+Configure IQ Adjustment.vi - Modify model condition to support new models.
+Configure IQ Output.vi - Add Custom option for Modulation Format.
+Configure Marker Destination.vi - Modify model condition and code logic to support new models.
+Configure Modulation (Amplitude).vi - Modify model condition to support new models.
+Configure Modulation (Custom).vi - Add some options for Modulation Type.
+Configure Modulation (Digital).vi - Add some options for Modulation Type.
+Configure Modulation (IQ).vi - Modify model condition to support new models.
+Configure Modulation (Pulse).vi - Modify model condition to support new models.
+Configure Modulation Source.vi - Valid Modulation Type, Modulation Path and Modulation Source in N5171B, N5172B, N5181B, N5182B.
+Configure Modulation Waveform (Noise).vi - The command to set noise type in new models have a different format.
+Configure Modulation Waveform (Swept-Sine).vi - Add Internal option for Sweep Trigger.
+Configure Power.vi - Modify model condition to support new models.
+Configure Reference Oscillator.vi - Modify model condition to support new models.
+Configure RT Noise.vi - Modify model condition to support new models.
+Configure Sweep Characteristics.vi - Modify model condition to support new models.
+Configure Trigger.vi - Modify model condition to support new models.
+Initialize.vi - Add support for N5161A, N5162A, N5171B, N5172B, N5181B, N5182B.
+Revision Query.vi - Update revision information.
+Self-Test.vi - It takes 7 mins at least for N5172B to finish self-test. Set the timeout to be 10min.
+-Private:
+Model Recognition.vi - Add support for new models.
+Series Recognition.vi - Add support for new series.
+(2) Only Description Modified:
+Configure IQ Correction.vi
+Configure Modulation Waveform (Dual-Sine).vi
+Configure Burst Shape.vi
+Configure Data Pattern.vi
+Configure Filter.vi
+Configure Low Frequency Output.vi
+Single Sweep.vi
+Set Frequency Reference.vi
+Select Waveform.vi
+Initiate Synchronization Trigger.vi
+Enable Synchronization Trigger Receiving.vi
+Enable Low-Band Filter.vi
+Disable Markers.vi
+Disable All Digital Modulation.vi
+Apply Two Tone Settings.vi
+Configure RT AWGN.vi
+Calibrate IQ.vi
+Configure Multiple Baseband Generator Synchronization.vi
+Configure ARB.vi
+Configure ARB Scaling.vi
+Configure ARB Clipping.vi
+Configure Multicarrier Setup.vi
+Configure Two Tone.vi
+Configure Multiple Tone.vi
+Configure Multiple Tone Characteristics.vi
+Configure Sample Clock Rate.vi
+Configure RT Phase Noise Impairment.vi
+Configure Reference.vi
+Configure Modulation Waveform (Ramp).vi
+Configure Modulation (Phase).vi
+Configure Modulation (Frequency).vi
+Configure Marker Polarity.vi
+Configure Waveform Sweep.vi
+Configure Sweep (Step).vi
+Configure Marker.vi
+Configure Frequency.vi
+Configure Frequency Channel.vi
+Configure RF Output.vi
+Send Software Trigger.vi
+
+REV 1.6.1, 04/2015 Modified by: NI Initialize - Updated to include Keysight Technologies along with Agilent as a Manufacturer
+REV 2.0, 09/15/2016 Modified by: Hongna Li Add support for N5173B, N5183B.
+Examples:
+Agilent PSG MXG Series BERT using Custom Digital Modulation.vi
+Agilent PSG MXG Series Operate N5102A Module in Output Mode.vi
+New VIs:
+Enable ARB Custom Digital Modulation.vi
+Enable Clock Gate.vi
+Enable Digital Input Noise.vi
+Perform Diagnostic Loop Back Test.vi
+Query Waveform Completed.vi
+Query Waveform Completed (ARB Digital Modulation).vi
+Query Waveform Completed (Dual ARB).vi
+Reset Baseband Frequency Offset Phase.vi
+Configure AUX Output.vi
+Configure BERT Pass Fail Criteria.vi
+Configure BERT Pseudo Pattern.vi
+Configure BERT Route Source.vi
+Configure BERT Synchronization.vi
+Configure BERT.vi
+Configure Bit Error Rate Polarity.vi
+Configure Clock Delay.vi
+Configure Clock Gate Delay.vi
+Configure Special Pattern Ignore.vi
+Configure Trigger Signal.vi
+Configure Digital Input Attenuation Level.vi
+Configure Digital Input Attenuation.vi
+Configure Digital Input Baseband Frequency Offset.vi
+Configure Digital Input Filter.vi
+Configure Digital Input Noise Bandwidth.vi
+Configure Digital Input Noise Multiplex.vi
+Configure Digital Input Noise Power.vi
+Configure Digital Input Noise.vi
+Configure Digital Input Phase Noise.vi
+Configure IQ Output Scaling.vi
+Configure Digital Output Frame Polarity.vi
+Configure Digital Output IQ Data.vi
+Configure Digital Output Signal.vi
+Configure Digital SSI Output.vi
+Configure ARB Single Trigger.vi
+Configure ALC Power Meter Servo.vi
+Configure Route Marker Signal.vi
+Read Data Bit Error Rate.vi
+Read Digital Input Phase Noise.vi
+Load and Save Data(Bit Data).vi
+Load and Save Data(Block-formatted Data).vi
+Load and Save Data(Burst Shape Data).vi
+Load and Save Data(FIR Data).vi
+Load and Save Data(FSK Data).vi
+Load and Save Data(Generic Data).vi
+Load and Save Data(IQ Data).vi
+Load and Save Data(List-formatted Data).vi
+Load and Save Data.vi
+Store Multicarrier Setup Information.vi
+Configure Multicarrier.vi
+Save Recall Pulse Train.vi
+Save Recall Waveforms.vi
+Append Data.vi
+Delete Files From Memory.vi
+Updated VIs:
+(1) Both Code and Description Modified:
+-Public:
+Initialize.vi - Add support for N5173B, N5183B.
+Revision Query.vi - Updated revision information.
+Configure Modulation(Pulse).vi - Added values for the Pulse Modulation Source control.
+Configure Filter.vi - Add values for the Filter Type control.
+Configure Internal Modulation.vi - Corrected the wrong SCPI command NOI to NOIS.
+Configure Modulation Waveform Advanced(Dual-Sine).vi - Corrected command ":LFO:INT:DUAL:FUNC%d:SHAP:RAMP" to ":LFO:DUAL:FUNC%d:SHAP:RAMP" for Low Frequency Output.
+Configure Signal Polarity.vi - Add blanks between commands and parameters.
+Configure Signal Route.vi - Added values for the Signal control.
+Configure Digital Signal Interface Module.vi - (1) Execute ":DIG:DIAG:LOOP %s;" command only for E8267D model and  (2) Added values for Data Transmission Type control.
+Configure Digital Clock.vi - Corrected command ":DIG:CLOC:SOURC" to ":DIG:CLOC:SOUR".
+Configure ALC Search.vi - Added values for the Power Search Reference control.
+Configure Sweep Trigger.vi - Added values for Sweep Trigger and Point Trigger controls.
+Configure Sweep(Step).vi - Added support for MXG-B and EXG series.
+Configure External ALC.vi - Corrected the command ":ALCH:EXT:SOUR" to ":POW:ALCH:EXT:SOUR".
+Configure IQ Adjustment.vi - Corrected non wired subVI.
+Configure Reference Oscillator.vi - Corrected non wired subVI.
+-Private:
+Model Recognition.vi - Added support for N5173B, N5183B.
+Series Recognition.vi - Added support for N5173B, N5183B.
+(2)Only Description Modified:
+Single Sweep.vi 
+Set Frequency Reference.vi
+Apply Two Tone Settings.vi
+Reset Digital Signal Interface Module.vi
+Clear Phase Accumulation.vi
+Calibrate IQ.vi
+Configure Data Clock.vi
+Configure Multicarrier Setup.vi
+Configure ARB Scaling.vi
+Configure Two Tone.vi
+Configure AUX Port.vi
+Configure AWGN Noise.vi
+Configure AWGN Power.vi
+Configure VM Trigger.vi
+Configure Modulation(Amplitude).vi
+Configure Modulation(Frequency).vi
+Configure Modulation(Phase).vi
+Configure Modulation(Digital).vi
+Configure Modulation((Custom Advanced).vi
+Configure Modulation(LF Output).vi
+Configure Modulation Source.vi
+Configure Modulation Waveform (Noise).vi
+Configure Modulation Waveform (Ramp).vi
+Configure Modulation Waveform (Dual-Sine).vi
+Configure Modulation Waveform (Swept-Sine).vi
+Configure External Trigger.vi
+Configure IQ Output.vi
+Configure Reference.vi
+Configure Sample Clock Rate.vi
+Configure Marker Polarity.vi
+Configure Marker Destination.vi
+Configure RT Noise.vi
+Configure RT Phase Noise Impairment.vi
+Configure External Modulation.vi
+Configure Internal Sweep Trigger.vi
+Configure Modulation Waveform Advanced(Swept-Sine).vi
+Configure Phase Noise Modulation.vi
+Configure Trigger Source.vi
+Configure Digital IQ Data.vi
+Configure Frequency.vi
+Configure Frequency Channel.vi
+Configure Reference Oscillator.vi
+Configure Power.vi
+Configure ALC.vi
+Configure RF Output.vi
+Configure Sweep Characteristics.vi
+Configure Sweep(List).vi
+Configure Power Alternate.vi
+Read Output Channel Status.vi
+Configure IQ Input.vi
+Obsoleted VIs:
+Configure AUX Port.vi - For backwards compatibility for old or existing applications. For new applications use Configure AUX Port.vi instead.
+</font></para></pre>
+</body>
+</html>

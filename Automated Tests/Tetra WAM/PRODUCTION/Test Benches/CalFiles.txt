@@ -1,0 +1,29 @@
+Each Tester requires a set of calibration files for RF paths
+Cal Files defined below:
+## All files are csv with Freq, Ampl pairs
+# FSPL.csv
+- This is a temp file created each time a test is started.
+ The data used to populate the losses is based on the frequencies selected and the Z (distance)
+  Z distance is derived from the .tst file field name "Gantry Z"
+    -Example:
+              To accurately generate Pdesired = -73 dBm to the 21"z WAM antenna top surface for a RX measurement:
+                  HORN GAIN = 12
+		  FSPL GAIN (21"@ 20Ghz) = -53.009
+		  RF CABLE / PATH GAIN = -9.775
+                 PSET = Pdesired + HORN GAIN + FSPL GAIN + RF CABLE/PATH GAIN = -73 + (12 + -53.009 + -9.775) = -73 (-) -50.784 = -22.216 dBm = PSET (sigGen)
+
+
+# TetraHornLoss.csv
+- Static file created from the horn Data Sheet and interpolated(1 GHz to 100MHz) 18 - 40 Ghz in 100 MHz steps
+ - This is actually Horn GAIN (pos) despite the file name
+
+# INPUT_CAL.csv [for RX]:
+ - This file is the loss measured from the sig gen to the coaxial antenna connector via cables and SPDT Switch in RX MODE
+ - The INPUT CAL FILE is cascaded with the horn loss and FSPL loss and together loaded as a table into the Sig Gen's Loss table for fast implement in the signal generator
+
+# OUTPUT_CAL.csv
+ - This file is the loss measured from the Spectrum Analyzer to the coaxial antenna connector via cables and SPDT Switch in TX MODE
+    - The Tx Offset added to raw data is as follows:
+         Pout = Praw + FSPL GAIN + HORN GAIN + OUTPUT_CAL GAIN
+
+

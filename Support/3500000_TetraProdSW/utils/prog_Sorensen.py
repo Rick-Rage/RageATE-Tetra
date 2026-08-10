@@ -1,0 +1,121 @@
+import pyvisa
+import time
+import os
+import subprocess as sp
+
+def reset(inst):
+    inst.write("CLR")
+    inst.write("*RST")
+    inst.write("OUT 0")
+    if(inst.query("OUT?") != 'OUT   0'):
+        print("Input may be incorrect")
+    
+def OVSet(inst,voltage):
+    inst.write(f'OVSET {voltage}')
+    print(inst.query("OVSET?"))
+    
+def UnMask(inst):
+    inst.write(f'UNMASK OV')
+    print(inst.query("UNMASK?"))
+    
+def SQR(inst):
+    inst.write('SQR 1')
+    print(inst.query('SQR?'))
+    
+def Fault(inst):
+    return(inst.query("FAULT?"))
+
+def SetV(inst,voltage):
+    inst.write(f'SOUR:VOLT {voltage}')
+    print(inst.query("SOUR:VOLT?"))
+    
+def SetILim(inst,ISupplySet):
+    inst.write(f'SOUR:CURR {ISupplySet}')
+    print("Current reads: " + inst.query("SOUR:CURR?"))
+
+def PowerOn(inst):
+    inst.write("OUT 1")
+
+def PowerOff(inst):
+    inst.write("OUT 0")
+
+def PowerCycle(inst):
+    PowerOff(inst)
+    PowerOn(inst)
+
+def readDisplay(inst):
+    voltCH1 = float(inst.query('MEAS:VOLT?'))
+    currentCH1 = float(inst.query('MEAS:CURR?'))
+    powerCH1 = voltCH1 * currentCH1
+    print(f'V={voltCH1:.3f}V I={currentCH1:.4f}A P={powerCH1:.2f}W')
+    return (voltCH1,currentCH1,powerCH1)
+
+def getVolt(inst):
+    return(float(inst.query('SOUR:VOLT?')))
+
+
+
+if __name__=='__main__':
+     ISupplySet = 2#amps
+     configTime = 7
+     rm = pyvisa.ResourceManager()
+     print(rm.list_resources())
+
+     
+     inst = rm.open_resource('GPIB0::5::INSTR')
+     reset(inst)
+     SetV(inst,17)
+     SetILim(inst,ISupplySet)
+     PowerOn(inst)
+     readDisplay(inst)
+     PowerOff(inst)
+#     v,i,p = readDisplay(inst)
+#     pic_status = False
+#     if (v >= 17) or (v <= 19):
+#         print("Power Ok")
+#         prog_pic()
+#         with open("log.txt",'r') as fh:
+#             content = fh.read()
+#             if 'Program Succeeded.' in content:
+#                 print('Pic Programmed Succesfully')
+#                 pic_status = True
+#             else:
+#                 print('Pic failed to Program')
+#     if pic_status:
+#         PowerCycle(inst)
+#         v,i,p = readDisplay(inst)
+#         if (v >= 17) or (v <= 19):
+#             print("Power Ok")
+
+
+
+# listMode = [5,0,5,0,5,0,5,0,5,0,5,0]
+# try:
+#    #Open Connection Keysight Visa
+#     rm = visa.ResourceManager()
+#    #Connect to VISA Address
+#    #GPIB Connection: 'GPIP0::xx::INSTR'
+#     myinst = rm.open_resource("GPIB0::13::INSTR")
+#     #Set Timeout - 5 seconds
+#     myinst.timeout = 5000
+#     #*IDN? - Query Instrumnet ID
+#     myinst.write("*IDN?")
+#     print(myinst.read())
+#     #Select Channel Output to program, This line is multiple channel output
+#     myinst.write(':INSTrument:NSELect 1')
+#     #Enable output ON
+#     myinst.write(':OUTPut:STATe 1')
+#     #generate voltage level output in sequence
+#     for x in range (len(listMode)):
+#         myinst.write(':SOURce:VOLTage:LEVel:IMMediate:AMPLitude %G' % listMode[x])
+#         #change this delay to increase or decrease output intervals
+#         myinst.timeout = 1000
+#
+# #Close Connection
+#     myinst.close()
+#     print 'close instrument connection'
+# except Exception as err:
+#     print 'Exception: ' + str(err.message)
+# finally:
+# #perform clean up operations
+#     print 'complete'

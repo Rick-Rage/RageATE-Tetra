@@ -20,3 +20,5 @@ outputhex9_13.txt
 /Utilities/BarCode.txt
 BarCode.txt
 dfltlog.txt
+Gantry.cpython-36.pyc
+*.pyc
